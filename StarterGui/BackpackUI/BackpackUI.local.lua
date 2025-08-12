@@ -51,9 +51,9 @@ if not panel then
 	panel.Visible = false
 	panel.Parent = gui
 
-	-- Sell Anywhere button (created once; prompts non-owners, sells for owners)
-	local MarketplaceService = game:GetService("MarketplaceService")
+	-- Sell Anywhere button (create once; prompt non-owners)
 	local RS = game:GetService("ReplicatedStorage")
+	local MarketplaceService = game:GetService("MarketplaceService")
 	if not panel:FindFirstChild("SellBtn") then
 		local sellBtn = Instance.new("TextButton")
 		sellBtn.Name = "SellBtn"
@@ -66,37 +66,28 @@ if not panel then
 		sellBtn.ZIndex = 10
 		sellBtn.Parent = panel
 		local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,8); sc.Parent = sellBtn
-
 		local SellAnywhereRE = RS:WaitForChild("SellAnywhere")
 		local CheckSellAnywhereRF = RS:WaitForChild("CheckSellAnywhere")
 		local GetGamepassIdsRF    = RS:WaitForChild("GetGamepassIds")
-
 		local ids = {}
 		pcall(function() ids = GetGamepassIdsRF:InvokeServer() end)
 		local PASS_SELL_ANYWHERE = (ids and ids.SELL_ANYWHERE) or 0
-
 		sellBtn.MouseButton1Click:Connect(function()
 			local owns = false
-			pcall(function()
-				owns = CheckSellAnywhereRF:InvokeServer() == true
-			end)
+			pcall(function() owns = CheckSellAnywhereRF:InvokeServer() == true end)
 			if owns then
 				SellAnywhereRE:FireServer()
 			else
 				if PASS_SELL_ANYWHERE and PASS_SELL_ANYWHERE > 0 then
 					MarketplaceService:PromptGamePassPurchase(game.Players.LocalPlayer, PASS_SELL_ANYWHERE)
 				else
-					local GM = RS:FindFirstChild("GameMessage")
-					if GM and GM.FireClient then
-						GM:FireClient(game.Players.LocalPlayer, "This feature requires the Sell Anywhere gamepass.")
-					end
+					local GM = RS:FindFirstChild("GameMessage"); if GM then GM:FireClient(game.Players.LocalPlayer, "Requires Sell Anywhere gamepass.") end
 				end
 			end
 		end)
 	end
 
-
-	-- Sell Anywhere (button in header, top-right left of X)
+-- Sell Anywhere (button in header, top-right left of X)
 	local sellBtn = Instance.new("TextButton")
 	sellBtn.Name = "SellBtn"
 	sellBtn.Size = UDim2.fromScale(0.14, 0.10)
