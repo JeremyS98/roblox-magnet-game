@@ -348,19 +348,15 @@ local function addXP(plr, amount)
 	local curXP=plr:GetAttribute("XP") or 0
 	local curLv=plr:GetAttribute("Level") or 1
 	curXP+=amount
-	while curLv<MAX_LEVEL do local need=xpToNext(curLv) if curXP>=need then curXP-=need; curLv+=1 else break end end
+	while curLv<MAX_LEVEL do
+		local need=xpToNext(curLv)
+		if curXP>=need then curXP-=need; curLv+=1 else break end
+	end
 	plr:SetAttribute("XP",curXP); plr:SetAttribute("Level",curLv)
 	local _,L=ensureLeaderstats(plr); L.Value=curLv
 	pushXP(plr,amount)
 end
-	local curXP=plr:GetAttribute("XP") or 0
-	local curLv=plr:GetAttribute("Level") or 1
-	curXP+=amount
-	while curLv<MAX_LEVEL do local need=xpToNext(curLv) if curXP>=need then curXP-=need; curLv+=1 else break end end
-	plr:SetAttribute("XP",curXP); plr:SetAttribute("Level",curLv)
-	local _,L=ensureLeaderstats(plr); L.Value=curLv
-	pushXP(plr,amount)
-end
+
 local function getCoins(plr) local ls=plr:FindFirstChild("leaderstats"); return ls and ls:FindFirstChild("Coins") end
 
 -- Backpack push
