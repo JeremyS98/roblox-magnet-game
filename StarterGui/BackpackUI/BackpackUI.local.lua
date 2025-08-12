@@ -81,7 +81,7 @@ if not panel then
 				if PASS_SELL_ANYWHERE and PASS_SELL_ANYWHERE > 0 then
 					MarketplaceService:PromptGamePassPurchase(game.Players.LocalPlayer, PASS_SELL_ANYWHERE)
 				else
-					local GM = RS:FindFirstChild("GameMessage"); if GM then GM:FireClient(game.Players.LocalPlayer, "Requires Sell Anywhere gamepass.") end
+					-- client-side noop
 				end
 			end
 		end)
@@ -131,24 +131,6 @@ if not panel then
 	closeBtn.Parent = panel
 	local cc = Instance.new("UICorner"); cc.CornerRadius = UDim.new(0,8); cc.Parent = closeBtn
 	closeBtn.MouseButton1Click:Connect(function() panel.Visible = false; player:SetAttribute("UILocked", false)
-
-	-- Sell Anywhere (if owned)
-	local sellBtn = Instance.new("TextButton")
-	sellBtn.Name = "SellBtn"
-	sellBtn.Size = UDim2.fromScale(0.14, 0.10)
-	sellBtn.Position = UDim2.fromScale(0.78, 0.06)
-	sellBtn.BackgroundColor3 = Color3.fromRGB(60,120,80)
-	sellBtn.Text = "Sell"
-	sellBtn.TextScaled = true
-	sellBtn.TextColor3 = Color3.new(1,1,1)
-	sellBtn.ZIndex = 10
-	sellBtn.Parent = panel
-	local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,8); sc.Parent = sellBtn
-
-	local SellAnywhereRE = RS:WaitForChild("SellAnywhere")
-	sellBtn.MouseButton1Click:Connect(function()
-		SellAnywhereRE:FireServer()
-	end)
 	SetUILockState:FireServer(false) end)
 
 	-- Grid 5x5
