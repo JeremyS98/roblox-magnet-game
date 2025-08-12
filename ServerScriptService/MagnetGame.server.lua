@@ -40,6 +40,7 @@ local SellAllResult         = ensureRE("SellAllResult")
 local RequestBackpack       = ensureRE("RequestBackpack")
 local BackpackData          = ensureRE("BackpackData")
 local RemoveItemRE          = ensureRE("RemoveBackpackItem")
+local SellAnywhereRE      = ensureRE("SellAnywhere")
 local XPUpdateRE            = ensureRE("XPUpdate")
 local RequestJournal        = ensureRE("RequestJournal")
 local JournalData           = ensureRE("JournalData")
@@ -376,6 +377,21 @@ local function sellAll(plr)
 	addXP(plr, sellXPFromValue(pre))
 	sendBackpack(plr)
 end
+-- Sell Anywhere handler (gamepass-gated)
+if SellAnywhereRE and SellAnywhereRE.Connect == nil then
+	-- (No-op: in case variable was accidentally replaced)
+end
+if SellAnywhereRE and SellAnywhereRE.OnServerEvent ~= nil then
+	SellAnywhereRE.OnServerEvent:Connect(function(plr)
+		if GamepassService.HasSellAnywhere(plr.UserId) then
+			sellAll(plr)
+		else
+			local GM = ensureRE("GameMessage")
+			GM:FireClient(plr, "Sell Anywhere requires the gamepass.")
+		end
+	end)
+end
+
 
 local function upgradeCost(which, level)
 	if which=="Luck" then return 100+level*100
