@@ -51,30 +51,35 @@ if not panel then
 	panel.Visible = false
 	panel.Parent = gui
 
-	-- Sell Anywhere button (create once; prompt non-owners)
-	local RS = game:GetService("ReplicatedStorage")
-	local MarketplaceService = game:GetService("MarketplaceService")
-	if not panel:FindFirstChild("SellBtn") then
-		local sellBtn = Instance.new("TextButton")
-		sellBtn.Name = "SellBtn"
-		sellBtn.Size = UDim2.fromScale(0.14, 0.10)
-		sellBtn.Position = UDim2.fromScale(0.70, 0.035) -- top-right, left of X
-		sellBtn.BackgroundColor3 = Color3.fromRGB(60,120,80)
-		sellBtn.Text = "Sell"
-		sellBtn.TextScaled = true
-		sellBtn.TextColor3 = Color3.new(1,1,1)
-		sellBtn.ZIndex = 10
-		sellBtn.Parent = panel
-		local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,8); sc.Parent = sellBtn
-		local SellAnywhereRE = RS:WaitForChild("SellAnywhere")
-		local CheckSellAnywhereRF = RS:WaitForChild("CheckSellAnywhere")
-		local GetGamepassIdsRF    = RS:WaitForChild("GetGamepassIds")
-		local ids = {}
-		pcall(function() ids = GetGamepassIdsRF:InvokeServer() end)
-		local PASS_SELL_ANYWHERE = (ids and ids.SELL_ANYWHERE) or 0
-		sellBtn.MouseButton1Click:Connect(function()
-			local owns = false
-			pcall(function() owns = CheckSellAnywhereRF:InvokeServer() == true end)
+-- Single Sell button (no prompt; requires pass; does nothing if not owned)
+local RS = game:GetService("ReplicatedStorage")
+if not panel:FindFirstChild("SellBtn") then
+	local sellBtn = Instance.new("TextButton")
+	sellBtn.Name = "SellBtn"
+	sellBtn.Size = UDim2.fromScale(0.14, 0.10)
+	sellBtn.Position = UDim2.fromScale(0.70, 0.035)
+	sellBtn.BackgroundColor3 = Color3.fromRGB(60,120,80)
+	sellBtn.Text = "Sell"
+	sellBtn.TextScaled = true
+	sellBtn.TextColor3 = Color3.new(1,1,1)
+	sellBtn.ZIndex = 10
+	sellBtn.Parent = panel
+	local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,8); sc.Parent = sellBtn
+
+	local SellAnywhereRE = RS:WaitForChild("SellAnywhere")
+	local CheckSellAnywhereRF = RS:WaitForChild("CheckSellAnywhere")
+
+	sellBtn.MouseButton1Click:Connect(function()
+		local owns = false
+		pcall(function() owns = CheckSellAnywhereRF:InvokeServer() == true end)
+		if owns then
+			SellAnywhereRE:FireServer()
+		else
+			-- do nothing now (later we’ll open shop / prompt)
+		end
+	end)
+end
+
 			if owns then
 				SellAnywhereRE:FireServer()
 			else
@@ -86,25 +91,6 @@ if not panel then
 			end
 		end)
 	end
-
--- Sell Anywhere (button in header, top-right left of X)
-	local sellBtn = Instance.new("TextButton")
-	sellBtn.Name = "SellBtn"
-	sellBtn.Size = UDim2.fromScale(0.14, 0.10)
-	sellBtn.Position = UDim2.fromScale(0.72, 0.04) -- moved up and left
-	sellBtn.BackgroundColor3 = Color3.fromRGB(60,120,80)
-	sellBtn.Text = "Sell"
-	sellBtn.TextScaled = true
-	sellBtn.TextColor3 = Color3.new(1,1,1)
-	sellBtn.ZIndex = 10
-	sellBtn.Parent = panel
-	local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,8); sc.Parent = sellBtn
-
-	local SellAnywhereRE = RS:WaitForChild("SellAnywhere")
-	sellBtn.MouseButton1Click:Connect(function()
-		SellAnywhereRE:FireServer()
-	end)
-
 	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,12); c.Parent = panel
 	local s = Instance.new("UIStroke"); s.Thickness = 2; s.Parent = panel
 
