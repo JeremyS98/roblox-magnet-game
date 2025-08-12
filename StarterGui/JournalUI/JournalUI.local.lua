@@ -124,7 +124,7 @@ fab.Parent = gui
 do
 	local fabCorner = Instance.new("UICorner"); fabCorner.CornerRadius = UDim.new(1,0); fabCorner.Parent = fab
 	local fabStroke = Instance.new("UIStroke"); fabStroke.Thickness = 2; fabStroke.Parent = fab
-	local badge = Instance.new("TextLabel")
+	badge = Instance.new("TextLabel")
 	badge.Size = UDim2.fromScale(0.45, 0.45)
 	badge.Position = UDim2.fromScale(0.55, -0.05)
 	badge.BackgroundColor3 = Color3.fromRGB(90,150,255)
@@ -132,6 +132,7 @@ do
 	badge.TextScaled = true
 	badge.Visible = false
 	badge.TextColor3 = WHITE
+	badge.Visible = false
 	badge.Parent = fab
 	local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(1,0); bCorner.Parent = badge
 end
@@ -229,7 +230,7 @@ local function open()
 	panel.Visible = true
 	player:SetAttribute("UILocked", true)
 	SetUILockState:FireServer(true)
-	RequestJournal:FireServer(); updateBadge()
+	RequestJournal:FireServer(); updateBadge(); updateBadge()
 end
 local function close()
 	panel.Visible = false
@@ -265,6 +266,7 @@ JournalData.OnClientEvent:Connect(function(payload)
 	rebuildVisible()
 	refresh()
 	updateBadge()
+	updateBadge()
 end)
 
 JournalDiscover.OnClientEvent:Connect(function(info)
@@ -272,6 +274,6 @@ JournalDiscover.OnClientEvent:Connect(function(info)
 		for _, e in ipairs(fullCatalog) do
 			if e.name == info.name then e.found = true break end
 		end
-		rebuildVisible(); refresh(); updateBadge()
+		rebuildVisible(); refresh(); updateBadge(); updateBadge()
 	end
 end)
