@@ -380,7 +380,7 @@ end
 -- Sell Anywhere handler (gamepass-gated)
 if SellAnywhereRE and SellAnywhereRE.OnServerEvent ~= nil then
 	SellAnywhereRE.OnServerEvent:Connect(function(plr)
-		if GamepassService.HasSellAnywhere(plr.UserId) then
+	if (GamepassService and GamepassService.HasSellAnywhere and GamepassService.HasSellAnywhere(plr.UserId)) then
 			sellAll(plr)
 		else
 			local GM = ensureRE("GameMessage")
