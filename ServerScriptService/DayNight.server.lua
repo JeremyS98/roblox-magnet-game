@@ -5,7 +5,7 @@
 local Lighting = game:GetService("Lighting")
 
 local TICK_SECONDS = 1
-local DAY_LENGTH_SECONDS = 600 -- 10 minutes
+local DAY_LENGTH_SECONDS = 1800 -- 10 minutes
 local TIME_SHIFT = 1440 / (DAY_LENGTH_SECONDS / TICK_SECONDS) -- minutes advanced per tick
 
 -- Brightness ease (night low, day high)
