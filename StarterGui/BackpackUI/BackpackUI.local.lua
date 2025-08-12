@@ -51,7 +51,7 @@ if not panel then
 	panel.Visible = false
 	panel.Parent = gui
 
--- Single Sell button (no prompt; requires pass; does nothing if not owned)
+-- Single Sell button (owners only; no prompt for non-owners)
 local RS = game:GetService("ReplicatedStorage")
 if not panel:FindFirstChild("SellBtn") then
 	local sellBtn = Instance.new("TextButton")
@@ -65,33 +65,20 @@ if not panel:FindFirstChild("SellBtn") then
 	sellBtn.ZIndex = 10
 	sellBtn.Parent = panel
 	local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,8); sc.Parent = sellBtn
-
 	local SellAnywhereRE = RS:WaitForChild("SellAnywhere")
 	local CheckSellAnywhereRF = RS:WaitForChild("CheckSellAnywhere")
-
 	sellBtn.MouseButton1Click:Connect(function()
 		local owns = false
 		pcall(function() owns = CheckSellAnywhereRF:InvokeServer() == true end)
 		if owns then
 			SellAnywhereRE:FireServer()
 		else
-			-- do nothing now (later we’ll open shop / prompt)
+			-- non-owners: no action (shop prompt later)
 		end
 	end)
 end
 
-			if owns then
-				SellAnywhereRE:FireServer()
-			else
-				if PASS_SELL_ANYWHERE and PASS_SELL_ANYWHERE > 0 then
-					MarketplaceService:PromptGamePassPurchase(game.Players.LocalPlayer, PASS_SELL_ANYWHERE)
-				else
-					-- client-side noop
-				end
-			end
-		end)
-	end
-	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,12); c.Parent = panel
+local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,12); c.Parent = panel
 	local s = Instance.new("UIStroke"); s.Thickness = 2; s.Parent = panel
 
 	local title = Instance.new("TextLabel")
