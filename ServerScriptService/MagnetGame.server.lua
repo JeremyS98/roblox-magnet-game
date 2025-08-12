@@ -378,9 +378,6 @@ local function sellAll(plr)
 	sendBackpack(plr)
 end
 -- Sell Anywhere handler (gamepass-gated)
-if SellAnywhereRE and SellAnywhereRE.Connect == nil then
-	-- (No-op: in case variable was accidentally replaced)
-end
 if SellAnywhereRE and SellAnywhereRE.OnServerEvent ~= nil then
 	SellAnywhereRE.OnServerEvent:Connect(function(plr)
 		if GamepassService.HasSellAnywhere(plr.UserId) then
