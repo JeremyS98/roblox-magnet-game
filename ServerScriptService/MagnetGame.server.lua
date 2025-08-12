@@ -41,6 +41,9 @@ local RequestBackpack       = ensureRE("RequestBackpack")
 local BackpackData          = ensureRE("BackpackData")
 local RemoveItemRE          = ensureRE("RemoveBackpackItem")
 local SellAnywhereRE      = ensureRE("SellAnywhere")
+local CheckSellAnywhereRF = ensureRF("CheckSellAnywhere")
+local GetGamepassIdsRF    = ensureRF("GetGamepassIds")
+
 local XPUpdateRE            = ensureRE("XPUpdate")
 local RequestJournal        = ensureRE("RequestJournal")
 local JournalData           = ensureRE("JournalData")
@@ -854,3 +857,21 @@ game:BindToClose(function()
 end)
 
 print("[MagnetGame] Server ready v4.6 (HIT cue + 2s pre-reel).")
+
+if CheckSellAnywhereRF and not CheckSellAnywhereRF.OnServerInvoke then
+	CheckSellAnywhereRF.OnServerInvoke = function(plr)
+		if GamepassService and GamepassService.HasSellAnywhere then
+			return GamepassService.HasSellAnywhere(plr.UserId) == true
+		end
+		return false
+	end
+end
+
+if GetGamepassIdsRF and not GetGamepassIdsRF.OnServerInvoke then
+	GetGamepassIdsRF.OnServerInvoke = function(plr)
+		if GamepassService and GamepassService.PASS_IDS then
+			return GamepassService.PASS_IDS()
+		end
+		return { SELL_ANYWHERE = 0, DOUBLE_XP = 0, SUPPORTER = 0 }
+	end
+end
