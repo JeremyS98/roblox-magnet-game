@@ -9,6 +9,7 @@ local SetUILockState = RS:WaitForChild("SetUILockState")
 local RequestJournal  = RS:WaitForChild("RequestJournal")
 local JournalData     = RS:WaitForChild("JournalData")
 local JournalDiscover = RS:WaitForChild("JournalDiscover")
+local RequestJournalDetails = RS:WaitForChild("RequestJournalDetails")
 
 -- UIBus for mutual exclusion with other UIs
 local UIBus = RS:FindFirstChild("UIBusCloseAll")
@@ -36,11 +37,47 @@ gui.Enabled = true
 local panel = Instance.new("Frame")
 panel.Name = "JournalPanel"
 panel.Size = UDim2.fromScale(0.56, 0.64)
-panel.Position = UDim2.fromScale(0.18, 0.18)
+panel.Position = UDim2.fromScale(0.12, 0.18)
 panel.BackgroundColor3 = Color3.fromRGB(18,18,20)
 panel.BackgroundTransparency = 0.05
 panel.Visible = false
 panel.Parent = gui
+
+-- ===== Details Panel (right side) =====
+local details = Instance.new("Frame")
+details.Name = "DetailsPanel"
+details.Size = UDim2.fromScale(0.26, 0.64)
+details.Position = UDim2.fromScale(0.70, 0.18)
+details.BackgroundColor3 = Color3.fromRGB(18,18,20)
+details.BackgroundTransparency = 0.05
+details.Visible = false
+details.Parent = gui
+do
+	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,12); c.Parent = details
+	local s = Instance.new("UIStroke"); s.Thickness = 2; s.Parent = details
+end
+
+local dName   = Instance.new("TextLabel"); dName.Name="Name"; dName.BackgroundTransparency=1; dName.Size=UDim2.fromScale(0.92, 0.14); dName.Position=UDim2.fromScale(0.04, 0.02); dName.TextScaled=true; dName.TextXAlignment=Enum.TextXAlignment.Left; dName.TextColor3=WHITE; dName.Parent=details
+local dFound  = Instance.new("TextLabel"); dFound.Name="Found"; dFound.BackgroundTransparency=1; dFound.Size=UDim2.fromScale(0.92, 0.10); dFound.Position=UDim2.fromScale(0.04, 0.18); dFound.TextScaled=true; dFound.TextXAlignment=Enum.TextXAlignment.Left; dFound.TextColor3=WHITE; dFound.Parent=details
+local dBest   = Instance.new("TextLabel"); dBest.Name="Best"; dBest.BackgroundTransparency=1; dBest.Size=UDim2.fromScale(0.92, 0.10); dBest.Position=UDim2.fromScale(0.04, 0.30); dBest.TextScaled=true; dBest.TextXAlignment=Enum.TextXAlignment.Left; dBest.TextColor3=WHITE; dBest.Parent=details
+local dWorld  = Instance.new("TextLabel"); dWorld.Name="World"; dWorld.BackgroundTransparency=1; dWorld.Size=UDim2.fromScale(0.92, 0.10); dWorld.Position=UDim2.fromScale(0.04, 0.42); dWorld.TextScaled=true; dWorld.TextXAlignment=Enum.TextXAlignment.Left; dWorld.TextColor3=WHITE; dWorld.Parent=details
+
+local dDesc   = Instance.new("TextLabel"); dDesc.Name="Desc"; dDesc.BackgroundTransparency=1; dDesc.Size=UDim2.fromScale(0.92, 0.30); dDesc.Position=UDim2.fromScale(0.04, 0.56); dDesc.TextWrapped=true; dDesc.TextScaled=true; dDesc.TextXAlignment=Enum.TextXAlignment.Left; dDesc.TextYAlignment=Enum.TextYAlignment.Top; dDesc.TextColor3=WHITE; dDesc.Parent=details
+
+local function showDetails(name, rarity)
+	local payload = RequestJournalDetails:InvokeServer(name)
+	local when = "Unknown"
+	if payload and payload.found and payload.firstAt and payload.firstAt > 0 then
+		when = os.date("%Y-%m-%d %H:%M", payload.firstAt)
+	end
+	dName.Text  = string.format("%s  (%s)", name or "?", rarity or "")
+	dFound.Text = "Discovered: " .. when
+	dBest.Text  = string.format("Largest: %s lb", tostring(payload and payload.maxLb or 0))
+	dWorld.Text = "Location: " .. ((payload and payload.world) or "World One")
+	dDesc.Text  = payload and payload.desc or "—"
+	details.Visible = true
+end
+
 do
 	local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0,12); corner.Parent = panel
 	local stroke = Instance.new("UIStroke"); stroke.Thickness = 2; stroke.Parent = panel
@@ -152,7 +189,9 @@ local function makeSlot(entry)
 	name.Text = entry.name or "?"
 	name.TextColor3 = RARITY_COLORS[entry.rarity or "Common"] or WHITE
 	local ns = Instance.new("UIStroke"); ns.Thickness = 1; ns.Color = Color3.fromRGB(0,0,0); ns.Parent = name
-	return f
+	
+	local btn = Instance.new("TextButton"); btn.BackgroundTransparency=1; btn.Size=UDim2.fromScale(1,1); btn.Text=""; btn.Parent=f; btn.MouseButton1Click:Connect(function() showDetails(entry.name, entry.rarity) end)
+return f
 end
 
 local function makePlaceholderSlot(rarity)
