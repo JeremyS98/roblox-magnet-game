@@ -175,14 +175,15 @@ local Loot = {
 		{name="Royal Seal Medallion", base=201, minW=1.01, maxW=2.80, rollWeight=2},
 		{name="Bronze Idol Fragment", base=191, minW=0.77, maxW=2.25, rollWeight=3},
 	},
-	Legendary = {
-		{name="Golden Anchor", base=800, minW=2.0, maxW=6.0, rollWeight=1},
+	Legendary = {{name="Golden Anchor", base=800, minW=2.0, maxW=6.0, rollWeight=1
+		{name="Sunken Compass", base=1200, minW=0.40, maxW=1.60, rollWeight=1},
+	},
 		{name="Cursed Crown", base=700, minW=0.6, maxW=1.4, rollWeight=1},
 		{name="Royal Scepter", base=900, minW=0.8, maxW=1.8, rollWeight=1},
 
 		Mythic = {
-			{name="Meteoric Iron Idol", base=2500, minW=1.20, maxW=8.00, rollWeight=1},
-		}
+		{name="Meteoric Iron Idol", base=5000, minW=3.0, maxW=8.0, rollWeight=1},
+	}
 	}
 }
 local RARITY_ORDER = {Mythic=0, Legendary=1, Epic=2, Rare=3, Common=4}
