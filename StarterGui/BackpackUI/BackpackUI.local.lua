@@ -50,6 +50,25 @@ if not panel then
 	panel.BackgroundTransparency = 0.05
 	panel.Visible = false
 	panel.Parent = gui
+
+	-- Sell Anywhere (button in header, top-right left of X)
+	local sellBtn = Instance.new("TextButton")
+	sellBtn.Name = "SellBtn"
+	sellBtn.Size = UDim2.fromScale(0.14, 0.10)
+	sellBtn.Position = UDim2.fromScale(0.72, 0.04) -- moved up and left
+	sellBtn.BackgroundColor3 = Color3.fromRGB(60,120,80)
+	sellBtn.Text = "Sell"
+	sellBtn.TextScaled = true
+	sellBtn.TextColor3 = Color3.new(1,1,1)
+	sellBtn.ZIndex = 10
+	sellBtn.Parent = panel
+	local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,8); sc.Parent = sellBtn
+
+	local SellAnywhereRE = RS:WaitForChild("SellAnywhere")
+	sellBtn.MouseButton1Click:Connect(function()
+		SellAnywhereRE:FireServer()
+	end)
+
 	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,12); c.Parent = panel
 	local s = Instance.new("UIStroke"); s.Thickness = 2; s.Parent = panel
 
