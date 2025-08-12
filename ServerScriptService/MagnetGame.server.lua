@@ -80,6 +80,36 @@ local Loot = {
 		{name="Metal Tag", base=4, minW=0.03, maxW=0.08, rollWeight=10},
 		{name="Nuts & Screws Mix", base=6, minW=0.12, maxW=0.35, rollWeight=8},
 		{name="Rust Flake Lump", base=2, minW=0.05, maxW=0.20, rollWeight=14},
+		{name="Rusty Wrench", base=8, minW=0.27, maxW=0.34, rollWeight=12},
+		{name="Bottle Cap Chain", base=5, minW=0.13, maxW=0.61, rollWeight=10},
+		{name="Nail Cluster", base=5, minW=0.12, maxW=0.66, rollWeight=9},
+		{name="Bent Key", base=6, minW=0.06, maxW=0.19, rollWeight=8},
+		{name="Old Hinge", base=6, minW=0.24, maxW=0.83, rollWeight=12},
+		{name="Wire Snip", base=7, minW=0.25, maxW=0.80, rollWeight=10},
+		{name="Broken Spring", base=2, minW=0.22, maxW=0.76, rollWeight=13},
+		{name="Metal Shard", base=4, minW=0.15, maxW=0.26, rollWeight=11},
+		{name="Twisted Rebar", base=4, minW=0.19, maxW=0.74, rollWeight=12},
+		{name="Small Bracket", base=5, minW=0.14, maxW=0.48, rollWeight=8},
+		{name="Dented Spoon", base=8, minW=0.28, maxW=0.83, rollWeight=8},
+		{name="Steel Nut", base=7, minW=0.26, maxW=0.70, rollWeight=14},
+		{name="Bolt Pair", base=7, minW=0.20, maxW=0.59, rollWeight=14},
+		{name="Fishing Swivel", base=8, minW=0.11, maxW=0.56, rollWeight=13},
+		{name="Tackle Piece", base=8, minW=0.04, maxW=0.59, rollWeight=9},
+		{name="Old Lure Body", base=3, minW=0.24, maxW=0.37, rollWeight=12},
+		{name="Rusty Hook", base=5, minW=0.05, maxW=0.65, rollWeight=12},
+		{name="Thin Chain", base=5, minW=0.05, maxW=0.40, rollWeight=13},
+		{name="Large Washer", base=2, minW=0.17, maxW=0.67, rollWeight=12},
+		{name="Mini Padlock", base=3, minW=0.29, maxW=0.67, rollWeight=12},
+		{name="Badge Clip", base=4, minW=0.14, maxW=0.52, rollWeight=11},
+		{name="Drawer Handle", base=4, minW=0.18, maxW=0.39, rollWeight=9},
+		{name="Pipe Clamp", base=8, minW=0.07, maxW=0.46, rollWeight=13},
+		{name="Door Stop Plate", base=4, minW=0.15, maxW=0.25, rollWeight=14},
+		{name="Bike Spoke", base=3, minW=0.27, maxW=0.83, rollWeight=14},
+		{name="Tent Stake", base=2, minW=0.27, maxW=0.83, rollWeight=12},
+		{name="Wire Hanger Piece", base=7, minW=0.13, maxW=0.57, rollWeight=10},
+		{name="Cabinet Knob", base=6, minW=0.25, maxW=0.77, rollWeight=13},
+		{name="Horseshoe Nail", base=6, minW=0.25, maxW=0.53, rollWeight=10},
+		{name="Picture Hanger", base=5, minW=0.16, maxW=0.56, rollWeight=13},
 	},
 	Rare = {
 		{name="Silver Ring", base=50, minW=0.01, maxW=0.03, rollWeight=6},
@@ -92,6 +122,36 @@ local Loot = {
 		{name="Vintage Lighter", base=48, minW=0.05, maxW=0.12, rollWeight=6},
 		{name="Antique Gear", base=46, minW=0.20, maxW=0.60, rollWeight=6},
 		{name="Collector’s Badge", base=50, minW=0.06, maxW=0.14, rollWeight=5},
+		{name="Silver Locket", base=65, minW=0.21, maxW=0.83, rollWeight=4},
+		{name="Old Car Emblem", base=55, minW=0.31, maxW=0.95, rollWeight=5},
+		{name="Pocket Knife", base=47, minW=0.06, maxW=0.61, rollWeight=5},
+		{name="Steel Flail Head", base=51, minW=0.41, maxW=1.04, rollWeight=4},
+		{name="Decorative Hinge", base=43, minW=0.40, maxW=1.71, rollWeight=5},
+		{name="Bronze Brooch", base=41, minW=0.42, maxW=1.44, rollWeight=4},
+		{name="Railroad Spike (Stamped)", base=40, minW=0.11, maxW=0.56, rollWeight=4},
+		{name="Antique Key", base=52, minW=0.09, maxW=1.37, rollWeight=4},
+		{name="Service Medal", base=41, minW=0.32, maxW=0.77, rollWeight=5},
+		{name="Compass Case", base=62, minW=0.11, maxW=0.58, rollWeight=4},
+		{name="Steel Horseshoe", base=61, minW=0.06, maxW=0.81, rollWeight=4},
+		{name="Brass Bell", base=48, minW=0.08, maxW=0.37, rollWeight=6},
+		{name="Locked Padlock", base=51, minW=0.25, maxW=0.53, rollWeight=7},
+		{name="Vintage Bottle Opener", base=41, minW=0.32, maxW=1.43, rollWeight=7},
+		{name="Old Door Knocker", base=46, minW=0.17, maxW=1.55, rollWeight=7},
+		{name="Stamped Dog Tag", base=58, minW=0.13, maxW=1.20, rollWeight=4},
+		{name="Watch Bezel", base=65, minW=0.35, maxW=1.65, rollWeight=6},
+		{name="Old Pistol Hammer", base=56, minW=0.16, maxW=1.14, rollWeight=7},
+		{name="Ship Nail (Wrought)", base=61, minW=0.13, maxW=0.94, rollWeight=7},
+		{name="Cannonball Fragment", base=58, minW=0.44, maxW=1.83, rollWeight=6},
+		{name="Cast Iron Toy Wheel", base=52, minW=0.43, maxW=0.96, rollWeight=4},
+		{name="Bike Hub", base=54, minW=0.38, maxW=1.02, rollWeight=4},
+		{name="Brass Weight", base=57, minW=0.18, maxW=0.69, rollWeight=7},
+		{name="Brass Door Plate", base=51, minW=0.32, maxW=1.40, rollWeight=5},
+		{name="Steel Pulley", base=62, minW=0.19, maxW=1.36, rollWeight=4},
+		{name="Copper Bracelet", base=40, minW=0.32, maxW=1.43, rollWeight=5},
+		{name="Brass Buckle", base=47, minW=0.15, maxW=0.93, rollWeight=7},
+		{name="Metal Flask", base=41, minW=0.23, maxW=1.34, rollWeight=7},
+		{name="Flint Striker", base=64, minW=0.35, maxW=0.61, rollWeight=7},
+		{name="Candlestick Base", base=42, minW=0.17, maxW=0.57, rollWeight=7},
 	},
 	Epic = {
 		{name="Small Gold Bar", base=170, minW=0.10, maxW=0.35, rollWeight=3},
@@ -101,29 +161,46 @@ local Loot = {
 		{name="Royal Seal Plate", base=180, minW=0.40, maxW=1.20, rollWeight=2},
 		{name="Ancient Relic Core", base=185, minW=0.30, maxW=0.90, rollWeight=2},
 		{name="Treasure Coffer (Small)", base=195, minW=0.80, maxW=2.00, rollWeight=2},
+		{name="Small Strongbox Plate", base=208, minW=0.81, maxW=2.44, rollWeight=2},
+		{name="Ornate Door Plate", base=181, minW=0.59, maxW=2.35, rollWeight=2},
+		{name="Collector Coin Roll", base=201, minW=1.04, maxW=3.00, rollWeight=3},
+		{name="Brass Sextant Arm", base=162, minW=0.79, maxW=2.73, rollWeight=2},
+		{name="Antique Pistol Frame", base=203, minW=0.95, maxW=2.93, rollWeight=3},
+		{name="Old Anchor Fluke", base=210, minW=0.91, maxW=1.88, rollWeight=2},
+		{name="Bronze Figurine", base=150, minW=0.95, maxW=1.45, rollWeight=4},
+		{name="Steel Safe Dial", base=183, minW=0.85, maxW=1.64, rollWeight=4},
+		{name="Treasure Coffer Plate", base=191, minW=0.48, maxW=1.43, rollWeight=4},
+		{name="Ship’s Compass Bowl", base=161, minW=0.39, maxW=2.17, rollWeight=3},
+		{name="Guild Sign Emblem", base=190, minW=0.37, maxW=1.28, rollWeight=3},
+		{name="Royal Seal Medallion", base=201, minW=1.01, maxW=2.80, rollWeight=2},
+		{name="Bronze Idol Fragment", base=191, minW=0.77, maxW=2.25, rollWeight=3},
 	},
 	Legendary = {
 		{name="Golden Anchor", base=800, minW=2.0, maxW=6.0, rollWeight=1},
 		{name="Cursed Crown", base=700, minW=0.6, maxW=1.4, rollWeight=1},
 		{name="Royal Scepter", base=900, minW=0.8, maxW=1.8, rollWeight=1},
+
+		Mythic = {
+			{name="Meteoric Iron Idol", base=2500, minW=1.20, maxW=8.00, rollWeight=1},
+		}
 	}
 }
-local RARITY_ORDER = {Legendary=1, Epic=2, Rare=3, Common=4}
+local RARITY_ORDER = {Mythic=0, Legendary=1, Epic=2, Rare=3, Common=4}
 local ITEM_RARITY = {} do for rar, list in pairs(Loot) do for _,it in ipairs(list) do ITEM_RARITY[it.name]=rar end end end
-local rarityWeightBonus = {Common=0.25,Rare=0.20,Epic=0.15,Legendary=0.10}
+local rarityWeightBonus = {Common=0.25,Rare=0.20,Epic=0.15,Legendary=0.10,Mythic=0.05}
 
 local function rarityOdds(luck)
-	local c,r,e,l = 70,20,9,1
-	local rb,eb,lb = 1.0*luck, 0.3*luck, 0.1*luck
-	local tot = rb+eb+lb
-	c = math.max(0, c-tot); r = r+rb; e = e+eb; l = l+lb
-	return {Common=c,Rare=r,Epic=e,Legendary=l}
+	local c,r,e,l,m = 70,20,9,0.9,0.1 -- Mythic starts at 0.1%
+	local rb,eb,lb,mb = 1.0*luck, 0.3*luck, 0.1*luck, 0.02*luck
+	local tot = rb+eb+lb+mb
+	c = math.max(0, c-tot); r = r+rb; e = e+eb; l = l+lb; m = m+mb
+	return {Common=c,Rare=r,Epic=e,Legendary=l,Mythic=m}
 end
 local function pickRarity(plr)
 	local odds = rarityOdds(plr:GetAttribute("Luck") or 0)
 	local roll = math.random()*100
 	local acc = 0
-	for _,rar in ipairs({"Common","Rare","Epic","Legendary"}) do
+	for _,rar in ipairs({"Common","Rare","Epic","Legendary","Mythic"}) do
 		acc += odds[rar]
 		if roll <= acc then return rar end
 	end
@@ -516,7 +593,7 @@ Workspace.DescendantAdded:Connect(function(inst)
 end)
 
 -- ===== Journal / Data =====
-local function mkOrder(r) return (r=="Legendary" and 1) or (r=="Epic" and 2) or (r=="Rare" and 3) or 4 end
+local function mkOrder(r) return (r=="Mythic" and 0) or (r=="Legendary" and 1) or (r=="Epic" and 2) or (r=="Rare" and 3) or 4 end
 local function buildCatalog()
 	local cat = {}
 	for rarity, list in pairs(Loot) do
