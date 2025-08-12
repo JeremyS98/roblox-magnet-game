@@ -24,6 +24,7 @@ local RARITY_COLORS  = {
 	Rare      = Color3.fromRGB(90,150,255),
 	Epic      = Color3.fromRGB(180,110,255),
 	Legendary = Color3.fromRGB(255,210,90),
+	Mythic    = Color3.fromRGB(255,0,0),
 }
 
 -- ===== Root GUI =====
