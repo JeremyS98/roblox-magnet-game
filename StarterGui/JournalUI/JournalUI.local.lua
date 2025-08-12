@@ -111,27 +111,23 @@ nextBtn.Parent = panel
 do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,8); c.Parent=nextBtn end
 
 -- ===== FAB 📓 =====
-local fab = gui:FindFirstChild("JournalFAB")
-if not fab then
-	fab = Instance.new("TextButton")
-	fab.Name = "JournalFAB"
-	fab.AnchorPoint = Vector2.new(1,1)
-	fab.Size = UDim2.fromOffset(64, 64)
-	fab.Position = UDim2.fromScale(0.90, 0.95)
-	fab.BackgroundColor3 = Color3.fromRGB(36,36,40)
-	fab.Text = "📓"
-	fab.TextScaled = true
-	fab.TextColor3 = WHITE
-	fab.Parent = gui
+local fab = Instance.new("TextButton")
+fab.Name = "JournalFAB"
+fab.AnchorPoint = Vector2.new(1,1)
+fab.Size = UDim2.fromOffset(64, 64)
+fab.Position = UDim2.fromScale(0.90, 0.95)
+fab.BackgroundColor3 = Color3.fromRGB(36,36,40)
+fab.Text = "📓"
+fab.TextScaled = true
+fab.TextColor3 = WHITE
+fab.Parent = gui
+do
 	local fabCorner = Instance.new("UICorner"); fabCorner.CornerRadius = UDim.new(1,0); fabCorner.Parent = fab
 	local fabStroke = Instance.new("UIStroke"); fabStroke.Thickness = 2; fabStroke.Parent = fab
-
-	-- Blue badge with white J (like Backpack)
-	badge = Instance.new("TextLabel")
-	badge.Name = "Badge"
+	local badge = Instance.new("TextLabel")
 	badge.Size = UDim2.fromScale(0.45, 0.45)
 	badge.Position = UDim2.fromScale(0.55, -0.05)
-	badge.BackgroundColor3 = Color3.fromRGB(90,150,255) -- blue
+	badge.BackgroundColor3 = Color3.fromRGB(90,150,255)
 	badge.Text = "J"
 	badge.TextScaled = true
 	badge.TextColor3 = WHITE
@@ -180,18 +176,6 @@ end
 
 -- ===== State / paging =====
 local fullCatalog, entries = {}, {}
-	end
-	if hasUncaughtMythic then
-		badge.Visible = true
-		badge.Text = "J"
-		badge.BackgroundColor3 = RARITY_COLORS.Mythic or Color3.fromRGB(255,0,0)
-		badge.TextColor3 = WHITE
-	else
-		-- fallback: show small journal dot or hide
-		badge.Visible = true
-	end
-end
-
 local page, perPage = 1, 25
 local function pagesCount() return math.max(1, math.ceil(#entries / perPage)) end
 local function rebuildVisible()
@@ -259,8 +243,6 @@ JournalData.OnClientEvent:Connect(function(payload)
 	fullCatalog = payload or {}
 	rebuildVisible()
 	refresh()
-	
-	
 end)
 
 JournalDiscover.OnClientEvent:Connect(function(info)
