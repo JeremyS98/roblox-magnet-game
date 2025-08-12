@@ -186,6 +186,62 @@ Mythic = {
 	{name="Meteoric Iron Idol", base=5000, minW=3.0, maxW=8.0, rollWeight=1},
 },
 }
+-- ===== Auto-descriptions ============================================
+local function simpleDescription(name: string): string
+	name = tostring(name or "")
+
+	local lower = string.lower(name)
+	local phrases = {}
+
+	local function add(p) table.insert(phrases, p) end
+
+	-- Base material/condition
+	if lower:find("rust") or lower:find("rusty") then add("A metal item with a reddish-brown, flaky rust coating.") end
+	if lower:find("gold") or lower:find("golden") then add("A bright metallic object with a warm golden sheen.") end
+	if lower:find("silver") then add("A cool, silvery metallic object with a soft shine.") end
+	if lower:find("bronze") then add("A dark golden-brown metal object with aged patina.") end
+	if lower:find("iron") then add("A heavy iron piece with a dark, worn surface.") end
+	if lower:find("steel") then add("A sturdy steel item with a dull, scratched finish.") end
+	if lower:find("copper") or lower:find("penny") then add("A reddish metal item with spots of tarnish.") end
+
+	-- Shape/type
+	if lower:find("nail") then add("A small, thin fastener with a pointed tip and flat head.") end
+	if lower:find("hook") then add("A curved piece of metal designed to catch or hold.") end
+	if lower:find("ring") then add("A circular band of metal.") end
+	if lower:find("coin") then add("A small, flat, round piece of metal used as currency.") end
+	if lower:find("watch") then add("A compact timepiece with delicate internal parts.") end
+	if lower:find("key") then add("A toothed metal key used to open locks.") end
+	if lower:find("lock") then add("A sturdy locking mechanism made of metal.") end
+	if lower:find("anchor") then add("A heavy, fluked anchor meant to hold fast underwater.") end
+	if lower:find("crown") then add("An ornate headpiece decorated with metal and detail.") end
+	if lower:find("scepter") then add("A ceremonial rod with decorative metalwork.") end
+	if lower:find("compass") then add("A navigational tool with a magnetized needle in a case.") end
+	if lower:find("chain") then add("Linked metal loops forming a flexible chain.") end
+	if lower:find("washer") then add("A flat, circular disc with a hole in the center.") end
+	if lower:find("spoon") or lower:find("fork") then add("A simple utensil with signs of wear.") end
+	if lower:find("can") then add("A thin-walled metal container, dented from age.") end
+	if lower:find("bolt") or lower:find("screw") then add("A threaded fastener with worn edges.") end
+	if lower:find("tag") then add("A small metal tag stamped with faint markings.") end
+	if lower:find("telescope") then add("A brass tube with lenses for viewing distant objects.") end
+	if lower:find("crown") or lower:find("royal") then add("An ornate piece with decorative flourishes.") end
+	if lower:find("idol") then add("A small sculpted figure with a mysterious aura.") end
+	if lower:find("lockbox") or lower:find("box") then add("A compact metal box with a simple latch.") end
+	if lower:find("plate") or lower:find("seal") then add("A flat piece of engraved metal.") end
+	if lower:find("fragment") then add("A broken fragment from a larger item.") end
+	if lower:find("bar") then add("A solid, rectangular bar of dense metal.") end
+	if lower:find("cap") then add("A small metal cap with ridges.") end
+	if lower:find("washer") then add("A thin metal washer with a central hole.") end
+	if lower:find("opener") then add("A small hand tool for opening bottles.") end
+	if lower:find("anchor") then add("A heavy anchor designed to bite into the ground.") end
+	if lower:find("idol") then add("A sculpted figure with sharp edges and weight.") end
+
+	-- Fallback if nothing matched
+	if #phrases == 0 then
+		return ("A simple %s made of metal, showing light wear."):format(name:lower())
+	end
+	return table.concat(phrases, " ")
+end
+
 
 local RARITY_ORDER = {Mythic=0, Legendary=1, Epic=2, Rare=3, Common=4}
 local ITEM_RARITY = {} do for rar, list in pairs(Loot) do for _,it in ipairs(list) do ITEM_RARITY[it.name]=rar end end end
@@ -626,9 +682,9 @@ RequestJournalDetails.OnServerInvoke = function(plr,itemName)
 	local rt=getRT(plr)
 	local det = rt.journalDetails[itemName]
 	if type(det)=="table" then
-		return {found=true, firstAt=tonumber(det.firstAt) or 0, maxLb=tonumber(det.maxLb) or 0, world=det.world or "World One"}
+		return {found=true, firstAt=tonumber(det.firstAt) or 0, maxLb=tonumber(det.maxLb) or 0, world=det.world or "World One", desc=simpleDescription(itemName)}
 	end
-	return {found=false}
+	return {found=false, world="World One", desc=simpleDescription(itemName)}
 end
 
 RequestBackpack.OnServerEvent:Connect(function(plr) sendBackpack(plr) end)
