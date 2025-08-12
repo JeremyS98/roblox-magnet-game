@@ -21,12 +21,14 @@ local RARITY_COLORS = {
 	Rare      = Color3.fromRGB(90,150,255),
 	Epic      = Color3.fromRGB(180,110,255),
 	Legendary = Color3.fromRGB(255,210,90),
+	Mythic    = Color3.fromRGB(255,0,0),
 }
 local RARITY_OUTLINE = {
 	Common    = Color3.fromRGB(80,80,80),
 	Rare      = Color3.fromRGB(50,80,150),
 	Epic      = Color3.fromRGB(110,70,160),
 	Legendary = Color3.fromRGB(140,110,40),
+	Mythic    = Color3.fromRGB(150,0,0),
 }
 local function rarityColor(r)
 	return RARITY_COLORS[r] or RARITY_COLORS.Common,
