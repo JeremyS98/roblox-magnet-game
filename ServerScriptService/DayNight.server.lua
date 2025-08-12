@@ -9,7 +9,7 @@ local DAY_LENGTH_SECONDS = 600 -- 10 minutes
 local TIME_SHIFT = 1440 / (DAY_LENGTH_SECONDS / TICK_SECONDS) -- minutes advanced per tick
 
 -- Brightness ease (night low, day high)
-local BRIGHT_MIN, BRIGHT_MAX = 1.0, 3.0
+local BRIGHT_MIN, BRIGHT_MAX = 1.7, 3.2
 local AMP_B = (BRIGHT_MAX - BRIGHT_MIN) / 2
 local OFF_B = BRIGHT_MIN + AMP_B
 
@@ -19,8 +19,8 @@ local AMP_S = (SHADOW_MAX - SHADOW_MIN) / 2
 local OFF_S = SHADOW_MIN + AMP_S
 
 -- Optional OutdoorAmbient (greyscale) sway — set USE_OUTDOOR = true if you want it
-local USE_OUTDOOR = false
-local OA_MIN, OA_MAX = 90, 130
+local USE_OUTDOOR = true
+local OA_MIN, OA_MAX = 110, 160
 local AMP_O = (OA_MAX - OA_MIN) / 2
 local OFF_O = OA_MIN + AMP_O
 
