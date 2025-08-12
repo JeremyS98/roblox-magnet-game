@@ -146,9 +146,9 @@ do
 	badge.BackgroundColor3 = Color3.fromRGB(90,150,255)
 	badge.Text = "J"
 	badge.TextScaled = true
-	badge.Visible = false
+	badge.Visible = true
 	badge.TextColor3 = WHITE
-	badge.Visible = false
+	badge.Visible = true
 	badge.Parent = fab
 	local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(1,0); bCorner.Parent = badge
 end
@@ -194,14 +194,6 @@ end
 
 -- ===== State / paging =====
 local fullCatalog, entries = {}, {}
--- ===== Badge update (Mythic uncaught) =====
-local function updateBadge()
-	local hasUncaughtMythic = false
-	for _, e in ipairs(fullCatalog) do
-		if not e.found and e.rarity == "Mythic" then
-			hasUncaughtMythic = true
-			break
-		end
 	end
 	if hasUncaughtMythic then
 		badge.Visible = true
@@ -210,7 +202,7 @@ local function updateBadge()
 		badge.TextColor3 = WHITE
 	else
 		-- fallback: show small journal dot or hide
-		badge.Visible = false
+		badge.Visible = true
 	end
 end
 
@@ -246,7 +238,7 @@ local function open()
 	panel.Visible = true
 	player:SetAttribute("UILocked", true)
 	SetUILockState:FireServer(true)
-	RequestJournal:FireServer(); updateBadge(); updateBadge()
+	RequestJournal:FireServer()
 end
 local function close()
 	panel.Visible = false
@@ -281,8 +273,8 @@ JournalData.OnClientEvent:Connect(function(payload)
 	fullCatalog = payload or {}
 	rebuildVisible()
 	refresh()
-	updateBadge()
-	updateBadge()
+	
+	
 end)
 
 JournalDiscover.OnClientEvent:Connect(function(info)
@@ -290,6 +282,6 @@ JournalDiscover.OnClientEvent:Connect(function(info)
 		for _, e in ipairs(fullCatalog) do
 			if e.name == info.name then e.found = true break end
 		end
-		rebuildVisible(); refresh(); updateBadge(); updateBadge()
+		rebuildVisible(); refresh()
 	end
 end)
