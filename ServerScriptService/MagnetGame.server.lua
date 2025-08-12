@@ -260,6 +260,23 @@ local function rarityOdds(luck)
 end
 local function pickRarity(plr)
 	local odds = rarityOdds(plr:GetAttribute("Luck") or 0)
+	-- Apply server-wide luck multiplier to higher rarities (renormalize to 100)
+	local mult = 1.0
+	if Boosts and Boosts.GetLuckMultiplierForPlayer then
+		mult = Boosts.GetLuckMultiplierForPlayer(plr) or 1.0
+	end
+	if mult and mult > 1.0 then
+		local rarList = {"Rare","Epic","Legendary","Mythic"}
+		local sum = 0
+		for k,v in pairs(odds) do sum += v end
+		for _,r in ipairs(rarList) do odds[r] = (odds[r] or 0) * mult end
+		-- renormalize to 100 total
+		local newSum = 0
+		for _,v in pairs(odds) do newSum += v end
+		if newSum > 0 then
+			for k,v in pairs(odds) do odds[k] = v * (100/newSum) end
+		end
+	end
 	local roll = math.random()*100
 	local acc = 0
 	for _,rar in ipairs({"Common","Rare","Epic","Legendary","Mythic"}) do
