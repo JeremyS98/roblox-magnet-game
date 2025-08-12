@@ -80,12 +80,13 @@ if not panel then
 	-- Sell Anywhere (if owned)
 	local sellBtn = Instance.new("TextButton")
 	sellBtn.Name = "SellBtn"
-	sellBtn.Size = UDim2.fromScale(0.16, 0.10)
-	sellBtn.Position = UDim2.fromScale(0.03, 0.06)
+	sellBtn.Size = UDim2.fromScale(0.14, 0.10)
+	sellBtn.Position = UDim2.fromScale(0.78, 0.06)
 	sellBtn.BackgroundColor3 = Color3.fromRGB(60,120,80)
 	sellBtn.Text = "Sell"
 	sellBtn.TextScaled = true
 	sellBtn.TextColor3 = Color3.new(1,1,1)
+	sellBtn.ZIndex = 10
 	sellBtn.Parent = panel
 	local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,8); sc.Parent = sellBtn
 
