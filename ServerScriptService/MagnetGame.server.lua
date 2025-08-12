@@ -342,7 +342,7 @@ local function pushXP(plr, delta)
 	XPUpdateRE:FireClient(plr,{delta=math.floor(delta or 0), level=curLv, xp=curXP, need=xpToNext(curLv)})
 end
 local function addXP(plr, amount)
-	amount = XPAdjust.Adjust(plr, amount)
+amount = (XPAdjust and XPAdjust.Adjust and XPAdjust.Adjust(plr, amount)) or amount
 	amount = math.max(0, math.floor(amount or 0))
 	if amount==0 then pushXP(plr,0) return end
 	local curXP=plr:GetAttribute("XP") or 0
