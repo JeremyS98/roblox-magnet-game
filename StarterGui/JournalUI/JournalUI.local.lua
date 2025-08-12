@@ -121,6 +121,22 @@ fab.Text = "📓"
 fab.TextScaled = true
 fab.TextColor3 = WHITE
 fab.Parent = gui
+
+do
+	local mark = Instance.new("TextLabel")
+	mark.Name = "fabMarkJ"
+	mark.Size = UDim2.fromScale(0.40, 0.40)
+	mark.AnchorPoint = Vector2.new(0,1)
+	mark.Position = UDim2.fromScale(0.05, 0.95)
+	mark.BackgroundTransparency = 0.25
+	mark.BackgroundColor3 = Color3.fromRGB(36,36,40)
+	mark.Text = "J"
+	mark.TextScaled = true
+	mark.TextColor3 = Color3.fromRGB(255,255,255)
+	local mc = Instance.new("UICorner"); mc.CornerRadius = UDim.new(1,0); mc.Parent = mark
+	local ms = Instance.new("UIStroke"); ms.Thickness = 1; ms.Parent = mark
+	mark.Parent = fab
+end
 do
 	local fabCorner = Instance.new("UICorner"); fabCorner.CornerRadius = UDim.new(1,0); fabCorner.Parent = fab
 	local fabStroke = Instance.new("UIStroke"); fabStroke.Thickness = 2; fabStroke.Parent = fab
