@@ -111,30 +111,30 @@ nextBtn.Parent = panel
 do local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,8); c.Parent=nextBtn end
 
 -- ===== FAB 📓 =====
-local fab = Instance.new("TextButton")
-fab.Name = "JournalFAB"
-fab.AnchorPoint = Vector2.new(1,1)
-fab.Size = UDim2.fromOffset(64, 64)
-fab.Position = UDim2.fromScale(0.90, 0.95)
-fab.BackgroundColor3 = Color3.fromRGB(36,36,40)
-fab.Text = "📓"
-fab.TextScaled = true
-fab.TextColor3 = WHITE
-fab.Parent = gui
-
-
-do
+local fab = gui:FindFirstChild("JournalFAB")
+if not fab then
+	fab = Instance.new("TextButton")
+	fab.Name = "JournalFAB"
+	fab.AnchorPoint = Vector2.new(1,1)
+	fab.Size = UDim2.fromOffset(64, 64)
+	fab.Position = UDim2.fromScale(0.90, 0.95)
+	fab.BackgroundColor3 = Color3.fromRGB(36,36,40)
+	fab.Text = "📓"
+	fab.TextScaled = true
+	fab.TextColor3 = WHITE
+	fab.Parent = gui
 	local fabCorner = Instance.new("UICorner"); fabCorner.CornerRadius = UDim.new(1,0); fabCorner.Parent = fab
 	local fabStroke = Instance.new("UIStroke"); fabStroke.Thickness = 2; fabStroke.Parent = fab
+
+	-- Blue badge with white J (like Backpack)
 	badge = Instance.new("TextLabel")
+	badge.Name = "Badge"
 	badge.Size = UDim2.fromScale(0.45, 0.45)
 	badge.Position = UDim2.fromScale(0.55, -0.05)
-	badge.BackgroundColor3 = Color3.fromRGB(90,150,255)
+	badge.BackgroundColor3 = Color3.fromRGB(90,150,255) -- blue
 	badge.Text = "J"
 	badge.TextScaled = true
-	badge.Visible = true
 	badge.TextColor3 = WHITE
-	badge.Visible = true
 	badge.Parent = fab
 	local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(1,0); bCorner.Parent = badge
 end
