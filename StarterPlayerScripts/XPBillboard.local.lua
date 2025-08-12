@@ -62,14 +62,22 @@ local function ensureBillboard(char: Model)
 	root.Size = UDim2.fromScale(1,1)
 	root.Parent = bb
 
-	local barBG = Instance.new("Frame")
+	
+	local holder = Instance.new("Frame")
+	holder.Name = "Holder"
+	holder.BackgroundTransparency = 1
+	holder.Size = UDim2.fromOffset(BAR_WIDTH + 70 + 8, 24)
+	holder.AnchorPoint = Vector2.new(0.5, 0.5)
+	holder.Position = UDim2.fromScale(0.5, 0.5)
+	holder.Parent = root
+local barBG = Instance.new("Frame")
 	barBG.Name = "BarBG"
 	barBG.AnchorPoint = Vector2.new(0, 0.5)
 	barBG.Position = UDim2.fromOffset(0, 12)
 	barBG.Size = UDim2.fromOffset(BAR_WIDTH, 8)
 	barBG.BackgroundColor3 = Color3.new(0,0,0)
 	barBG.BackgroundTransparency = TRACK_TRANSPARENCY
-	barBG.Parent = root
+	barBG.Parent = holder
 	local bgc = Instance.new("UICorner"); bgc.CornerRadius = UDim.new(0,4); bgc.Parent = barBG
 
 	local bar = Instance.new("Frame")
@@ -90,7 +98,7 @@ local function ensureBillboard(char: Model)
 	gain.TextColor3 = Color3.new(1,1,1)
 	gain.TextXAlignment = Enum.TextXAlignment.Left
 	gain.Text = "+0 XP"
-	gain.Parent = root
+	gain.Parent = holder
 
 	local lvl = Instance.new("TextLabel")
 	lvl.Name = "Level"
