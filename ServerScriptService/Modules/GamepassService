@@ -9,39 +9,39 @@ local GamepassService = {}
 
 -- >>> EDIT THESE with your real IDs when ready <<<
 local PASS = {
-    SELL_ANYWHERE = 0,  -- Game Pass ID
-    DOUBLE_XP     = 0,  -- Game Pass ID
-    SUPPORTER     = 0,  -- Game Pass ID
+	SELL_ANYWHERE = 1398568526,  -- Game Pass ID
+	DOUBLE_XP     = 1398202970,  -- Game Pass ID
+	SUPPORTER     = 1398211073,  -- Game Pass ID
 }
 
 local PRODUCT = {
-    SERVER_LUCK_2X_15MIN = 0, -- Dev Product ID
+	SERVER_LUCK_2X_15MIN = 3369392638, -- Dev Product ID
 }
 
 function GamepassService.PASS_IDS() return PASS end
 function GamepassService.PRODUCT_IDS() return PRODUCT end
 
 local function isAdmin(userId)
-    return Admins and Admins.IsAdmin and Admins.IsAdmin(userId) == true
+	return Admins and Admins.IsAdmin and Admins.IsAdmin(userId) == true
 end
 
 local function ownsPass(userId, passId)
-    if isAdmin(userId) then return true end
-    if type(passId) ~= "number" or passId <= 0 then return false end
-    local ok, res = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, userId, passId)
-    return ok and res == true
+	if isAdmin(userId) then return true end
+	if type(passId) ~= "number" or passId <= 0 then return false end
+	local ok, res = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, userId, passId)
+	return ok and res == true
 end
 
 function GamepassService.HasSellAnywhere(userId)
-    return ownsPass(userId, PASS.SELL_ANYWHERE)
+	return ownsPass(userId, PASS.SELL_ANYWHERE)
 end
 
 function GamepassService.HasDoubleXP(userId)
-    return ownsPass(userId, PASS.DOUBLE_XP)
+	return ownsPass(userId, PASS.DOUBLE_XP)
 end
 
 function GamepassService.HasSupporter(userId)
-    return ownsPass(userId, PASS.SUPPORTER)
+	return ownsPass(userId, PASS.SUPPORTER)
 end
 
 return GamepassService
