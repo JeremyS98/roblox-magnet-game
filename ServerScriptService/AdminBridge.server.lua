@@ -1,10 +1,14 @@
--- ServerScriptService/AdminBridge.server.lua (full)
+-- ServerScriptService/AdminBridge.server (Script)
 local RS  = game:GetService("ReplicatedStorage")
 local SSS = game:GetService("ServerScriptService")
 
 -- Remotes
-local IsAdminRF = RS:FindFirstChild("IsAdmin") or Instance.new("RemoteFunction", RS)
-IsAdminRF.Name = "IsAdmin"
+local IsAdminRF = RS:FindFirstChild("IsAdmin")
+if not IsAdminRF then
+	IsAdminRF = Instance.new("RemoteFunction")
+	IsAdminRF.Name = "IsAdmin"
+	IsAdminRF.Parent = RS
+end
 
 local AdminActivateLuckRE = RS:FindFirstChild("AdminActivateLuck")
 if not AdminActivateLuckRE then
