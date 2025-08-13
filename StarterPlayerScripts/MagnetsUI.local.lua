@@ -1,38 +1,15 @@
 -- MagnetsUI.local.lua
--- Minimal, safe UI for equipping magnets from the shadow catalog.
--- Reads FeatureFlags mirror in ReplicatedStorage; if absent or disabled, the
--- UI still opens but will show a small "(disabled)" hint. No gameplay change
--- unless server uses the equipped id.
+-- Bottom-left circular FAB like Backpack/Journal. Keybind: M.
+-- Opens a panel listing magnets from GetMagnets RF and lets the player equip via EquipMagnet RF.
+-- Non-destructive: creates its own ScreenGui children only.
 
 local RS = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 
--- Remotes / bridges (tolerant to missing objects)
-local function waitOrNil(parent, name, t)
-	t = t or 5
-	local obj = parent:FindFirstChild(name)
-	if obj then return obj end
-	local got = nil
-	local started = tick()
-	while tick() - started < t do
-		got = parent:FindFirstChild(name)
-		if got then return got end
-		task.wait(0.1)
-	end
-	return nil
-end
-
-local FeatureFlagsFolder = waitOrNil(RS, "FeatureFlags", 2)
-local ReelV2Flag = FeatureFlagsFolder and FeatureFlagsFolder:FindFirstChild("ReelV2Enabled")
-local MagnetsFlag = FeatureFlagsFolder and FeatureFlagsFolder:FindFirstChild("MagnetsEnabled")
-
-local GetMagnetsRF = waitOrNil(RS, "GetMagnets", 2)
-local EquipMagnetRF = waitOrNil(RS, "EquipMagnet", 2)
-
--- UIBus mutual exclusion
+-- UIBus (mutual exclusion with other panels like Backpack/Journal)
 local UIBus = RS:FindFirstChild("UIBusCloseAll")
 if not UIBus then
 	UIBus = Instance.new("BindableEvent")
@@ -40,231 +17,342 @@ if not UIBus then
 	UIBus.Parent = RS
 end
 
--- GUI root
-local gui = Instance.new("ScreenGui")
-gui.Name = "MagnetsUI"
-gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = false
-gui.Parent = player:WaitForChild("PlayerGui")
+-- Remotes
+local GetMagnetsRF = RS:WaitForChild("GetMagnets", 5)
+local EquipMagnetRF = RS:WaitForChild("EquipMagnet", 5)
 
--- Top button (left of the existing Shop button)
-local topBtn = Instance.new("TextButton")
-topBtn.Name = "MagnetsButton"
-topBtn.AnchorPoint = Vector2.new(0.5, 0)
-topBtn.Size = UDim2.fromOffset(110, 36)
-topBtn.Position = UDim2.fromScale(0.42, 0.02) -- quarter-ish across, try to avoid Shop
-topBtn.BackgroundColor3 = Color3.fromRGB(36, 36, 40)
-topBtn.Text = "🧲 Magnets"
-topBtn.TextScaled = true
-topBtn.TextColor3 = Color3.new(1,1,1)
-topBtn.Parent = gui
-do
-	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 8); c.Parent = topBtn
-	local s = Instance.new("UIStroke"); s.Thickness = 2; s.Parent = topBtn
+-- Feature flags mirror (from FeatureFlagsBridge.server.lua)
+local FF = RS:FindFirstChild("FeatureFlags")
+
+-- Root GUI
+local gui = script.Parent
+gui.ResetOnSpawn = false
+gui.Enabled = true
+
+----------------------------------------------------------------
+-- FAB (bottom-left, circle with blue "M" badge) ---------------
+----------------------------------------------------------------
+local fab = gui:FindFirstChild("MagnetsFAB")
+if not fab then
+	fab = Instance.new("TextButton")
+	fab.Name = "MagnetsFAB"
+	fab.AnchorPoint = Vector2.new(0, 1)
+	fab.Size = UDim2.fromOffset(64, 64)
+	-- Place near bottom-left, slightly to the right so it can sit beside your Journal button
+	fab.Position = UDim2.fromScale(0.11, 0.95)
+	fab.BackgroundColor3 = Color3.fromRGB(36, 36, 40)
+	fab.Text = "🧲"
+	fab.TextScaled = true
+	fab.TextColor3 = Color3.new(1, 1, 1)
+	fab.Parent = gui
+
+	local fabCorner = Instance.new("UICorner")
+	fabCorner.CornerRadius = UDim.new(1, 0)
+	fabCorner.Parent = fab
+
+	local fabStroke = Instance.new("UIStroke")
+	fabStroke.Thickness = 2
+	fabStroke.Parent = fab
+
+	local badge = Instance.new("TextLabel")
+	badge.Name = "Badge"
+	badge.Size = UDim2.fromScale(0.45, 0.45)
+	badge.Position = UDim2.fromScale(0.55, -0.05)
+	badge.BackgroundColor3 = Color3.fromRGB(90, 150, 255)
+	badge.Text = "M"
+	badge.TextScaled = true
+	badge.TextColor3 = Color3.fromRGB(255, 255, 255)
+	badge.Parent = fab
+
+	local bCorner = Instance.new("UICorner")
+	bCorner.CornerRadius = UDim.new(1, 0)
+	bCorner.Parent = badge
 end
 
--- Panel
-local panel = Instance.new("Frame")
-panel.Name = "Panel"
-panel.Size = UDim2.fromScale(0.44, 0.54)
-panel.Position = UDim2.fromScale(0.28, 0.18)
-panel.Visible = false
-panel.BackgroundColor3 = Color3.fromRGB(18,18,20)
-panel.Parent = gui
-do
+----------------------------------------------------------------
+-- Panel -------------------------------------------------------
+----------------------------------------------------------------
+local panel = gui:FindFirstChild("MagnetsPanel")
+if not panel then
+	panel = Instance.new("Frame")
+	panel.Name = "MagnetsPanel"
+	panel.Size = UDim2.fromScale(0.50, 0.62)
+	panel.Position = UDim2.fromScale(0.25, 0.19)
+	panel.BackgroundColor3 = Color3.fromRGB(18, 18, 20)
+	panel.BackgroundTransparency = 0.05
+	panel.Visible = false
+	panel.Parent = gui
+
 	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 12); c.Parent = panel
 	local s = Instance.new("UIStroke"); s.Thickness = 2; s.Parent = panel
+
+	local title = Instance.new("TextLabel")
+	title.Name = "Title"
+	title.BackgroundTransparency = 1
+	title.Size = UDim2.fromScale(0.6, 0.12)
+	title.Position = UDim2.fromScale(0.03, 0.02)
+	title.Text = "🧲 Magnets"
+	title.TextScaled = true
+	title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.Parent = panel
+
+	-- Small flag hint (moved left so it doesn't sit behind the X)
+	local hint = Instance.new("TextLabel")
+	hint.Name = "FlagHint"
+	hint.BackgroundTransparency = 1
+	hint.Size = UDim2.fromScale(0.35, 0.10)
+	hint.Position = UDim2.fromScale(0.65, 0.04)
+	hint.TextScaled = true
+	hint.TextColor3 = Color3.fromRGB(200, 200, 200)
+	hint.TextXAlignment = Enum.TextXAlignment.Right
+	hint.Parent = panel
+	hint.Visible = false  -- toggled by feature flag
+
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Name = "Close"
+	closeBtn.AnchorPoint = Vector2.new(1, 0)
+	closeBtn.Size = UDim2.fromScale(0.08, 0.12)
+	closeBtn.Position = UDim2.fromScale(0.98, 0.02)
+	closeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	closeBtn.Text = "X"
+	closeBtn.TextScaled = true
+	closeBtn.TextColor3 = Color3.new(1, 1, 1)
+	closeBtn.Parent = panel
+	local cc = Instance.new("UICorner"); cc.CornerRadius = UDim.new(0, 8); cc.Parent = closeBtn
+	closeBtn.MouseButton1Click:Connect(function()
+		panel.Visible = false
+		player:SetAttribute("UILocked", false)
+		local SetUILockState = RS:FindFirstChild("SetUILockState")
+		if SetUILockState and SetUILockState:IsA("RemoteEvent") then
+			SetUILockState:FireServer(false)
+		end
+	end)
+
+	-- Grid
+	local gridFrame = Instance.new("Frame")
+	gridFrame.Name = "Grid"
+	gridFrame.Size = UDim2.fromScale(0.94, 0.78)
+	gridFrame.Position = UDim2.fromScale(0.03, 0.18)
+	gridFrame.BackgroundTransparency = 1
+	gridFrame.Parent = panel
+
+	local uiGrid = Instance.new("UIGridLayout")
+	uiGrid.CellPadding = UDim2.fromOffset(8, 8)
+	uiGrid.CellSize = UDim2.fromScale(0.30, 0.30) -- 3 columns
+	uiGrid.FillDirectionMaxCells = 3
+	uiGrid.SortOrder = Enum.SortOrder.LayoutOrder
+	uiGrid.Parent = gridFrame
+
+	-- Empty message
+	local empty = Instance.new("TextLabel")
+	empty.Name = "Empty"
+	empty.BackgroundTransparency = 1
+	empty.Size = UDim2.fromScale(1, 0.2)
+	empty.Position = UDim2.fromScale(0, 0.40)
+	empty.Text = "No magnets yet."
+	empty.TextScaled = true
+	empty.TextColor3 = Color3.fromRGB(225, 225, 225)
+	empty.Visible = false
+	empty.Parent = gridFrame
 end
 
-local title = Instance.new("TextLabel")
-title.BackgroundTransparency = 1
-title.Size = UDim2.fromScale(0.7, 0.12)
-title.Position = UDim2.fromScale(0.03, 0.02)
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Text = "🧲 Magnets"
-title.TextScaled = true
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.Parent = panel
-
-local hint = Instance.new("TextLabel")
-hint.BackgroundTransparency = 1
-hint.Size = UDim2.fromScale(0.6, 0.10)
-hint.Position = UDim2.fromScale(0.40, 0.03)
-hint.TextScaled = true
-hint.TextXAlignment = Enum.TextXAlignment.Right
-hint.TextColor3 = Color3.fromRGB(200, 200, 200)
-hint.Text = (MagnetsFlag and MagnetsFlag.Value == true) and "" or "(disabled)"
-hint.Parent = panel
-
-local closeBtn = Instance.new("TextButton")
-closeBtn.AnchorPoint = Vector2.new(1, 0)
-closeBtn.Size = UDim2.fromScale(0.08, 0.12)
-closeBtn.Position = UDim2.fromScale(0.98, 0.02)
-closeBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
-closeBtn.Text = "X"
-closeBtn.TextScaled = true
-closeBtn.TextColor3 = Color3.new(1,1,1)
-closeBtn.Parent = panel
-do
-	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 8); c.Parent = closeBtn
-end
-
-local gridHolder = Instance.new("Frame")
-gridHolder.Name = "Grid"
-gridHolder.BackgroundTransparency = 1
-gridHolder.Size = UDim2.fromScale(0.94, 0.78)
-gridHolder.Position = UDim2.fromScale(0.03, 0.18)
-gridHolder.Parent = panel
-
-local grid = Instance.new("UIGridLayout")
-grid.CellPadding = UDim2.fromOffset(8, 8)
-grid.CellSize = UDim2.fromScale(0.31, 0.30)
-grid.FillDirectionMaxCells = 3
-grid.SortOrder = Enum.SortOrder.LayoutOrder
-grid.Parent = gridHolder
-
-local equippedId : string? = nil
-local lastCatalog = {}
-
-local function setOpen(open: boolean)
-	panel.Visible = open
-	if open then
-		UIBus:Fire("Magnets")
+----------------------------------------------------------------
+-- Helpers -----------------------------------------------------
+----------------------------------------------------------------
+local function setFlagHint()
+	local hint = panel:FindFirstChild("FlagHint")
+	if not hint then return end
+	local enabled = false
+	if FF and FF:FindFirstChild("MagnetsEnabled") then
+		enabled = FF.MagnetsEnabled.Value
+		FF.MagnetsEnabled:GetPropertyChangedSignal("Value"):Connect(function()
+			setFlagHint()
+		end)
+	end
+	if enabled then
+		hint.Text = ""
+		hint.Visible = false
+	else
+		hint.Text = "(disabled)"
+		hint.Visible = true
 	end
 end
-
-UIBus.Event:Connect(function(who)
-	if who ~= "Magnets" then
-		setOpen(false)
-	end
-end)
 
 local function clearGrid()
-	for _,child in ipairs(gridHolder:GetChildren()) do
-		if child:IsA("Frame") then child:Destroy() end
+	local grid = panel:FindFirstChild("Grid")
+	if not grid then return end
+	for _, child in ipairs(grid:GetChildren()) do
+		if child:IsA("Frame") or child:IsA("TextButton") or child:IsA("TextLabel") then
+			if child.Name ~= "Empty" and child.Name ~= "UIGridLayout" then
+				child:Destroy()
+			end
+		end
 	end
 end
 
-local function makeRow(entry)
-	local frame = Instance.new("Frame")
-	frame.BackgroundColor3 = Color3.fromRGB(28,28,32)
-	frame.Parent = gridHolder
-	do
-		local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 8); c.Parent = frame
-		local s = Instance.new("UIStroke"); s.Thickness = 1.5; s.Parent = frame
-	end
+local function addCard(info, equippedId)
+	local grid = panel:FindFirstChild("Grid")
+	if not grid then return end
+
+	local card = Instance.new("Frame")
+	card.Name = "Card_" .. (info.id or "unknown")
+	card.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 10); c.Parent = card
+	local s = Instance.new("UIStroke"); s.Thickness = 1.5; s.Parent = card
 
 	local name = Instance.new("TextLabel")
 	name.BackgroundTransparency = 1
-	name.Size = UDim2.fromScale(0.95, 0.28)
-	name.Position = UDim2.fromScale(0.03, 0.04)
-	name.Text = tostring(entry.id or "?")
+	name.Size = UDim2.fromScale(0.94, 0.34)
+	name.Position = UDim2.fromScale(0.03, 0.02)
 	name.TextScaled = true
-	name.TextColor3 = Color3.fromRGB(230,230,230)
+	name.TextWrapped = true
 	name.TextXAlignment = Enum.TextXAlignment.Left
-	name.Parent = frame
+	name.Text = tostring(info.name or info.id or "Magnet")
+	name.TextColor3 = Color3.fromRGB(250, 250, 250)
+	name.Parent = card
 
-	local stats = entry.stats or {}
-	local statText = string.format("lure %.1f  rarity %.1f  control %.1f  weight %.1f  stability %.1f",
-		tonumber(stats.lure or stats.speed or 1),
-		tonumber(stats.rarity or stats.luck or 1),
-		tonumber(stats.control or 1),
-		tonumber(stats.weight or stats.maxWeight or 1),
-		tonumber(stats.stability or 1)
+	local stats = Instance.new("TextLabel")
+	stats.BackgroundTransparency = 1
+	stats.Size = UDim2.fromScale(0.94, 0.40)
+	stats.Position = UDim2.fromScale(0.03, 0.38)
+	stats.TextScaled = true
+	stats.TextWrapped = true
+	stats.TextXAlignment = Enum.TextXAlignment.Left
+	local st = info.stats or {}
+	stats.Text = string.format("Lure %s  Rarity %s\nControl %s  Weight %s\nStability %s",
+		tostring(st.lure or st.speed or 1),
+		tostring(st.rarity or st.luck or 1),
+		tostring(st.control or 1),
+		tostring(st.weight or st.maxWeight or 1),
+		tostring(st.stability or 1)
 	)
+	stats.TextColor3 = Color3.fromRGB(210, 210, 210)
+	stats.Parent = card
 
-	local statLbl = Instance.new("TextLabel")
-	statLbl.BackgroundTransparency = 1
-	statLbl.Size = UDim2.fromScale(0.95, 0.34)
-	statLbl.Position = UDim2.fromScale(0.03, 0.32)
-	statLbl.Text = statText
-	statLbl.TextScaled = true
-	statLbl.TextColor3 = Color3.fromRGB(200,200,200)
-	statLbl.TextXAlignment = Enum.TextXAlignment.Left
-	statLbl.Parent = frame
+	local equip = Instance.new("TextButton")
+	equip.Name = "Equip"
+	equip.Size = UDim2.fromScale(0.50, 0.20)
+	equip.Position = UDim2.fromScale(0.25, 0.76)
+	equip.BackgroundColor3 = Color3.fromRGB(60, 120, 80)
+	equip.TextScaled = true
+	equip.TextColor3 = Color3.new(1,1,1)
+	local ec = Instance.new("UICorner"); ec.CornerRadius = UDim.new(0, 8); ec.Parent = equip
+	equip.Parent = card
 
-	local equipBtn = Instance.new("TextButton")
-	equipBtn.AnchorPoint = Vector2.new(1, 1)
-	equipBtn.Size = UDim2.fromScale(0.44, 0.28)
-	equipBtn.Position = UDim2.fromScale(0.95, 0.92)
-	equipBtn.BackgroundColor3 = Color3.fromRGB(60,120,80)
-	equipBtn.Text = (equippedId == entry.id) and "✓ Equipped" or "Equip"
-	equipBtn.TextScaled = true
-	equipBtn.TextColor3 = Color3.new(1,1,1)
-	equipBtn.Parent = frame
-	do
-		local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 8); c.Parent = equipBtn
+	local id = info.id
+	if id and equippedId == id then
+		equip.Text = "✓ Equipped"
+		equip.BackgroundColor3 = Color3.fromRGB(80, 140, 100)
+		equip.AutoButtonColor = false
+	else
+		equip.Text = "Equip"
 	end
 
-	equipBtn.MouseButton1Click:Connect(function()
+	equip.MouseButton1Click:Connect(function()
 		if not EquipMagnetRF then return end
 		local ok, res = pcall(function()
-			return EquipMagnetRF:InvokeServer(entry.id)
+			return EquipMagnetRF:InvokeServer(id)
 		end)
-		if ok and type(res) == "table" and res.ok == true then
-			equippedId = res.equipped
-			-- refresh button labels
-			for _,child in ipairs(gridHolder:GetChildren()) do
-				if child:IsA("Frame") then
-					local b = child:FindFirstChildWhichIsA("TextButton")
-					if b then
-						local lblName = child:FindFirstChildWhichIsA("TextLabel")
-						local idHere = lblName and lblName.Text or ""
-						b.Text = (idHere == equippedId) and "✓ Equipped" or "Equip"
+		if ok and type(res)=="table" and res.ok then
+			-- refresh after equip
+			task.defer(function()
+				local ok2, payload = pcall(function()
+					return GetMagnetsRF and GetMagnetsRF:InvokeServer()
+				end)
+				if ok2 and type(payload)=="table" then
+					local cat = payload.catalog or {}
+					clearGrid()
+					if #cat == 0 then
+						panel.Grid.Empty.Visible = true
+					else
+						panel.Grid.Empty.Visible = false
+						for _, m in ipairs(cat) do
+							addCard(m, payload.equipped)
+						end
 					end
 				end
-			end
+			end)
 		end
 	end)
+
+	card.Parent = grid
 end
 
-local function populate()
-	if not GetMagnetsRF then return end
-	local ok, res = pcall(function()
+local function refresh()
+	setFlagHint()
+
+	if not GetMagnetsRF then
+		-- still show a graceful empty state
+		panel.Grid.Empty.Text = "Magnets not available."
+		panel.Grid.Empty.Visible = true
+		return
+	end
+
+	local ok, payload = pcall(function()
 		return GetMagnetsRF:InvokeServer()
 	end)
-	if not ok or type(res) ~= "table" then return end
-	equippedId = res.equipped
-	lastCatalog = res.catalog or {}
-	clearGrid()
-	for _,entry in ipairs(lastCatalog) do
-		makeRow(entry)
+	if not ok or type(payload) ~= "table" then
+		panel.Grid.Empty.Text = "Failed to load magnets."
+		panel.Grid.Empty.Visible = true
+		return
 	end
-	-- update hint if flag toggled while open
-	if MagnetsFlag then
-		hint.Text = MagnetsFlag.Value and "" or "(disabled)"
+
+	local cat = payload.catalog or {}
+	clearGrid()
+	if #cat == 0 then
+		panel.Grid.Empty.Text = "No magnets yet."
+		panel.Grid.Empty.Visible = true
+	else
+		panel.Grid.Empty.Visible = false
+		for _, info in ipairs(cat) do
+			addCard(info, payload.equipped)
+		end
 	end
 end
 
-topBtn.MouseButton1Click:Connect(function()
-	if panel.Visible then
-		setOpen(false)
-	else
-		populate()
-		setOpen(true)
+----------------------------------------------------------------
+-- Open/Close + keybind ---------------------------------------
+----------------------------------------------------------------
+local function open()
+	UIBus:Fire("Magnets") -- ask others to close
+	panel.Visible = true
+	player:SetAttribute("UILocked", true)
+	local SetUILockState = RS:FindFirstChild("SetUILockState")
+	if SetUILockState and SetUILockState:IsA("RemoteEvent") then
+		SetUILockState:FireServer(true)
 	end
+	refresh()
+end
+
+local function close()
+	panel.Visible = false
+	player:SetAttribute("UILocked", false)
+end
+
+fab.MouseButton1Click:Connect(function()
+	if panel.Visible then close() else open() end
 end)
 
-closeBtn.MouseButton1Click:Connect(function()
-	setOpen(false)
-end)
-
--- Keyboard shortcut (M)
-UIS.InputBegan:Connect(function(inp, gp)
+UserInputService.InputBegan:Connect(function(inp, gp)
 	if gp then return end
 	if inp.KeyCode == Enum.KeyCode.M then
-		if panel.Visible then
-			setOpen(false)
-		else
-			populate()
-			setOpen(true)
-		end
+		if panel.Visible then close() else open() end
 	end
 end)
 
--- React to MagnetsEnabled flag changes
-if MagnetsFlag then
-	MagnetsFlag:GetPropertyChangedSignal("Value"):Connect(function()
-		hint.Text = MagnetsFlag.Value and "" or "(disabled)"
-	end)
+-- mutual exclusion
+UIBus.Event:Connect(function(who)
+	if who ~= "Magnets" then
+		close()
+	end
+end)
+
+-- Safety: if FeatureFlags changes after open/close
+if FF then
+	if FF:FindFirstChild("MagnetsEnabled") then
+		FF.MagnetsEnabled:GetPropertyChangedSignal("Value"):Connect(function()
+			setFlagHint()
+		end)
+	end
 end
