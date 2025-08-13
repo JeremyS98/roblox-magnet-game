@@ -878,9 +878,12 @@ print("[MagnetGame] Server ready v4.6 (HIT cue + 2s pre-reel).")
 
 if CheckSellAnywhereRF then
 	CheckSellAnywhereRF.OnServerInvoke = function(plr)
-		if GamepassService and GamepassService.HasSellAnywhere then
-			return GamepassService.HasSellAnywhere(plr.UserId) == true
-		end
+	if Admins.IsAdmin(plr.UserId) then return true end
+	if GamepassService and GamepassService.HasSellAnywhere then
+		return GamepassService.HasSellAnywhere(plr.UserId) == true
+	end
+	return false
+end
 		return false
 	end
 end
