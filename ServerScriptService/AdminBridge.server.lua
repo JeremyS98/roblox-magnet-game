@@ -1,7 +1,8 @@
--- ServerScriptService/AdminBridge.server.lua
+-- ServerScriptService/AdminBridge.server.lua (full)
 local RS  = game:GetService("ReplicatedStorage")
 local SSS = game:GetService("ServerScriptService")
 
+-- Remotes
 local IsAdminRF = RS:FindFirstChild("IsAdmin") or Instance.new("RemoteFunction", RS)
 IsAdminRF.Name = "IsAdmin"
 
@@ -12,15 +13,18 @@ if not AdminActivateLuckRE then
 	AdminActivateLuckRE.Parent = RS
 end
 
+-- Modules
 local Modules = SSS:WaitForChild("Modules")
 local Admins  = require(Modules:WaitForChild("Admins"))
 
+-- Optional Boosts
 local Boosts = nil
 pcall(function()
 	local inst = Modules:FindFirstChild("Boosts") or Modules:FindFirstChild("Boosts.lua")
 	if inst then Boosts = require(inst) end
 end)
 
+-- API
 IsAdminRF.OnServerInvoke = function(plr)
 	return Admins.IsAdmin(plr.UserId)
 end
