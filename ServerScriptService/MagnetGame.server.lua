@@ -9,17 +9,44 @@ local RS = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local DataStoreService = game:GetService("DataStoreService")
 local CollectionService = game:GetService("CollectionService")
-local Terrain = Workspace.Terrain
 local SSS = game:GetService("ServerScriptService")
+local Terrain = Workspace.Terrain
 
--- ===== Modules =====
-local Modules = SSS:WaitForChild("Modules")
-local Admins = require(Modules:WaitForChild("Admins"))
-local GamepassService = require(Modules:WaitForChild("GamepassService"))
-local Boosts = nil
-pcall(function() Boosts = require(Modules:WaitForChild("Boosts")) end)
-local XPAdjust = nil
-pcall(function() XPAdjust = require(Modules:WaitForChild("XPAdjust")) end)
+-- ===== Optional Modules (safe require) =====
+local Admins do
+	local ok, mod = pcall(function()
+		return require(SSS:WaitForChild("Modules"):WaitForChild("Admins"))
+	end)
+	if ok then Admins = mod else warn("[MagnetGame] Admins module missing or failed to load:", mod) end
+end
+
+local GamepassService do
+	local ok, mod = pcall(function()
+		return require(SSS:WaitForChild("Modules"):WaitForChild("GamepassService"))
+	end)
+	if ok then GamepassService = mod else warn("[MagnetGame] GamepassService module missing or failed to load:", mod) end
+end
+
+local Boosts do
+	local ok, mod = pcall(function()
+		return require(SSS:WaitForChild("Modules"):WaitForChild("Boosts"))
+	end)
+	if ok then Boosts = mod else warn("[MagnetGame] Boosts module missing or failed to load:", mod) end
+end
+
+local XPAdjust do
+	local ok, mod = pcall(function()
+		return require(SSS:WaitForChild("Modules"):WaitForChild("XPAdjust"))
+	end)
+	if ok then XPAdjust = mod else warn("[MagnetGame] XPAdjust module missing or failed to load:", mod) end
+end
+
+local Magnets do
+	local ok, mod = pcall(function()
+		return require(SSS:WaitForChild("Modules"):WaitForChild("Magnets"))
+	end)
+	if ok then Magnets = mod else warn("[MagnetGame] Magnets module missing or failed to load:", mod) end
+end
 
 -- ===== Remotes =====
 local function ensureRE(n)
@@ -257,11 +284,11 @@ local function simpleDescription(name: string): string
 	return table.concat(phrases, " ")
 end
 
-
 local RARITY_ORDER = {Mythic=0, Legendary=1, Epic=2, Rare=3, Common=4}
 local ITEM_RARITY = {} do for rar, list in pairs(Loot) do for _,it in ipairs(list) do ITEM_RARITY[it.name]=rar end end end
 local rarityWeightBonus = {Common=0.25,Rare=0.20,Epic=0.15,Legendary=0.10,Mythic=0.05}
 
+-- Rarity odds baseline + server luck multiplier support
 local function rarityOdds(luck)
 	local c,r,e,l,m = 70,20,9,0.9,0.1 -- Mythic starts at 0.1%
 	local rb,eb,lb,mb = 1.0*luck, 0.3*luck, 0.1*luck, 0.02*luck
@@ -275,17 +302,17 @@ local function pickRarity(plr)
 	local mult = 1.0
 	if Boosts and Boosts.GetLuckMultiplierForPlayer then
 		mult = Boosts.GetLuckMultiplierForPlayer(plr) or 1.0
-	end
-	if mult and mult > 1.0 then
-		local rarList = {"Rare","Epic","Legendary","Mythic"}
-		local sum = 0
-		for k,v in pairs(odds) do sum += v end
-		for _,r in ipairs(rarList) do odds[r] = (odds[r] or 0) * mult end
-		-- renormalize to 100 total
-		local newSum = 0
-		for _,v in pairs(odds) do newSum += v end
-		if newSum > 0 then
-			for k,v in pairs(odds) do odds[k] = v * (100/newSum) end
+		-- buff only higher rarities, then renormalize
+		if mult and mult > 1.0 then
+			local rarList = {"Rare","Epic","Legendary","Mythic"}
+			local sum = 0
+			for _,v in pairs(odds) do sum += v end
+			for _,r in ipairs(rarList) do odds[r] = (odds[r] or 0) * mult end
+			local newSum = 0
+			for _,v in pairs(odds) do newSum += v end
+			if newSum > 0 then
+				for k,v in pairs(odds) do odds[k] = v * (100/newSum) end
+			end
 		end
 	end
 	local roll = math.random()*100
@@ -296,6 +323,7 @@ local function pickRarity(plr)
 	end
 	return "Common"
 end
+
 local function pickItem(rarity)
 	local pool = Loot[rarity]; local tw=0
 	for _,it in ipairs(pool) do tw += (it.rollWeight or 1) end
@@ -306,6 +334,7 @@ local function pickItem(rarity)
 	end
 	return pool[#pool]
 end
+
 local function rollWeightAndValue(rarity, def)
 	local minW,maxW=def.minW,def.maxW
 	local w = math.random()*(maxW-minW)+minW
@@ -316,6 +345,7 @@ local function rollWeightAndValue(rarity, def)
 	value = math.max(1, math.floor(value*sway+0.5))
 	return w, value
 end
+
 local function kgToLbRounded(kg) return math.floor(kg*2.20462*100+0.5)/100 end
 
 -- ===== Runtime / inventory / XP =====
@@ -374,7 +404,10 @@ local function pushXP(plr, delta)
 	XPUpdateRE:FireClient(plr,{delta=math.floor(delta or 0), level=curLv, xp=curXP, need=xpToNext(curLv)})
 end
 local function addXP(plr, amount)
-	amount = (XPAdjust and XPAdjust.Adjust and XPAdjust.Adjust(plr, amount)) or amount
+	if XPAdjust and XPAdjust.Adjust then
+		local ok, newAmt = pcall(function() return XPAdjust.Adjust(plr, amount) end)
+		if ok and type(newAmt) == "number" then amount = newAmt end
+	end
 	amount = math.max(0, math.floor(amount or 0))
 	if amount==0 then pushXP(plr,0) return end
 	local curXP=plr:GetAttribute("XP") or 0
@@ -408,7 +441,8 @@ local function sellAll(plr)
 	addXP(plr, sellXPFromValue(pre))
 	sendBackpack(plr)
 end
--- Sell Anywhere handler (gamepass-gated, admin overrides)
+
+-- Sell Anywhere handler (gamepass-gated)
 if SellAnywhereRE and SellAnywhereRE.OnServerEvent ~= nil then
 	SellAnywhereRE.OnServerEvent:Connect(function(plr)
 		if (Admins and Admins.IsAdmin and Admins.IsAdmin(plr.UserId)) or (GamepassService and GamepassService.HasSellAnywhere and GamepassService.HasSellAnywhere(plr.UserId)) then
@@ -419,7 +453,6 @@ if SellAnywhereRE and SellAnywhereRE.OnServerEvent ~= nil then
 		end
 	end)
 end
-
 
 local function upgradeCost(which, level)
 	if which=="Luck" then return 100+level*100
@@ -772,7 +805,8 @@ local function defaultData()
 		xp=0, level=1,
 		journal={},
 		journalDiscovered = {},
-		journalDetails    = {}
+		journalDetails    = {},
+		equippedMagnetId = nil, -- NEW
 	}
 end
 
@@ -783,6 +817,7 @@ local function sanitizeLoaded(data)
 	data.items = type(data.items)=="table" and data.items or {}
 	data.xp = tonumber(data.xp) or 0; data.level = math.clamp(tonumber(data.level) or 1, 1, MAX_LEVEL)
 	migrateLegacyJournalToNewFields(data)
+	if type(data.equippedMagnetId) ~= "string" then data.equippedMagnetId = nil end
 	local cleaned = {}
 	for _,e in ipairs(data.items) do
 		if type(e)=="table" and type(e.name)=="string" and type(e.rarity)=="string" and tonumber(e.kg) and tonumber(e.value) then
@@ -842,6 +877,7 @@ local function snapshot(plr)
 	data.journalDiscovered = rt.journalDiscovered or {}
 	data.journalDetails    = rt.journalDetails or {}
 	data.journal = data.journal or {}
+	data.equippedMagnetId = plr:GetAttribute("EquippedMagnetId") -- NEW
 	return data
 end
 
@@ -860,6 +896,16 @@ Players.PlayerAdded:Connect(function(plr)
 	local Coins,LevelVal=ensureLeaderstats(plr); Coins.Value=data.coins or 0; LevelVal.Value=data.level or 1
 	plr:SetAttribute("Luck", data.attrs.Luck or 0); plr:SetAttribute("Reel", data.attrs.Reel or 0); plr:SetAttribute("Strength", data.attrs.Strength or 0)
 	plr:SetAttribute("XP", data.xp or 0); plr:SetAttribute("Level", data.level or 1)
+	-- Equipped magnet attribute (default from Magnets if missing)
+	local equipped = data.equippedMagnetId
+	if not (type(equipped) == "string" and equipped ~= "") then
+		if Magnets and Magnets.GetEquippedId then
+			equipped = Magnets.GetEquippedId(plr)
+		else
+			equipped = "basic"
+		end
+	end
+	plr:SetAttribute("EquippedMagnetId", equipped)
 	plr:SetAttribute("UILockedServer", false)
 	pushXP(plr, 0)
 end)
@@ -886,7 +932,7 @@ end)
 
 print("[MagnetGame] Server ready v4.6 (HIT cue + 2s pre-reel).")
 
--- ===== Pass/product RFs & SellAnywhere check =====
+-- ===== RF/RE handlers at end =====
 if CheckSellAnywhereRF then
 	CheckSellAnywhereRF.OnServerInvoke = function(plr)
 		if Admins and Admins.IsAdmin and Admins.IsAdmin(plr.UserId) then return true end
