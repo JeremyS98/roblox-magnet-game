@@ -1,39 +1,49 @@
 -- ServerScriptService/Modules/Magnets.lua
--- Shadow magnet equip manager (no gameplay effect yet). Stores the equipped id as a Player Attribute
--- and provides helper functions. Later, gameplay will read these stats when the feature flag is on.
+-- Shadow magnet system catalog (no gameplay effects yet)
+-- Safe API: Magnets.enabled, Magnets.catalog, Magnets.GetCatalog(), Magnets.ById(id)
 
-local Players = game:GetService("Players")
-local SSS = game:GetService("ServerScriptService")
+local FeatureFlags = require(game.ServerScriptService:WaitForChild("Modules"):WaitForChild("FeatureFlags"))
 
-local Catalog = require(SSS:WaitForChild("Modules"):WaitForChild("MagnetCatalog"))
+local Magnets = {}
 
-local M = {}
+-- Keep feature flag wiring declarative
+Magnets.enabled = (FeatureFlags and FeatureFlags.MagnetsEnabled) == true
 
-local ATTR = "EquippedMagnetId"
+-- Neutral starter catalog
+-- Stats are neutral (1.0). Names/ids are placeholders you can rename later.
+Magnets.catalog = {
+	starter_basic = {
+		id = "starter_basic",
+		name = "Basic Magnet",
+		desc = "A plain, reliable magnet with no special properties.",
+		stats = { lure = 1.0, rarity = 1.0, control = 1.0, weight = 1.0, stability = 1.0 },
+	},
+	starter_lucky = {
+		id = "starter_lucky",
+		name = "Lucky Magnet",
+		desc = "Said to attract better finds—pure superstition (for now).",
+		stats = { lure = 1.0, rarity = 1.0, control = 1.0, weight = 1.0, stability = 1.0 },
+	},
+	starter_fast = {
+		id = "starter_fast",
+		name = "Quickdraw Magnet",
+		desc = "Slick shape that cuts through the water easily.",
+		stats = { lure = 1.0, rarity = 1.0, control = 1.0, weight = 1.0, stability = 1.0 },
+	},
+}
 
-function M.GetEquippedId(plr)
-	if not plr then return Catalog.DefaultId() end
-	return plr:GetAttribute(ATTR) or Catalog.DefaultId()
+function Magnets.GetCatalog()
+	-- Return a shallow copy (so callers don't mutate our table by accident)
+	local out = {}
+	for k, v in pairs(Magnets.catalog) do
+		out[k] = v
+	}
+	return out
 end
 
-function M.SetEquippedId(plr, id)
-	if not (plr and Catalog.IsValid(id)) then return false end
-	plr:SetAttribute(ATTR, id)
-	return true
+function Magnets.ById(id)
+	if not id then return nil end
+	return Magnets.catalog[id]
 end
 
--- Convenience for server console testing:
--- local magnets = require(game.ServerScriptService.Modules.Magnets)
--- magnets.Equip(game.Players.YourName, "lucky")
-function M.Equip(plr, id)
-	return M.SetEquippedId(plr, id)
-end
-
--- Ensure new players have a default
-Players.PlayerAdded:Connect(function(plr)
-	if not plr:GetAttribute(ATTR) then
-		plr:SetAttribute(ATTR, Catalog.DefaultId())
-	end
-end)
-
-return M
+return Magnets
