@@ -1,21 +1,22 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local openReel = ReplicatedStorage:WaitForChild("OpenReel", 5)
-local flagsFolder = ReplicatedStorage:WaitForChild("FeatureFlags", 5)
-local reelV2 = flagsFolder and flagsFolder:FindFirstChild("ReelV2Enabled")
+local OpenReel = ReplicatedStorage:WaitForChild("OpenReel", 5)
+local ReelEnded = ReplicatedStorage:FindFirstChild("ReelEnded")
+local Flags = ReplicatedStorage:WaitForChild("FeatureFlags", 5)
+local ReelV2Flag = Flags and Flags:FindFirstChild("ReelV2Enabled")
 
 local function pickStatsFromCatalog(catalog, equippedId)
 	if not catalog or not equippedId then return nil end
 
-	-- Case 1: catalog is a dictionary keyed by id
+	-- Dictionary form: catalog[id] = { stats = {...} } or direct stats table
 	if typeof(catalog) == "table" and catalog[equippedId] then
 		local entry = catalog[equippedId]
 		if typeof(entry) == "table" then
-			return entry.stats or entry  -- either nested stats or the entry *is* the stats
+			return entry.stats or entry
 		end
 	end
 
-	-- Case 2: catalog is an array of entries { id="...", stats={...} }
+	-- Array form: { {id="...", stats={...}}, ... }
 	if typeof(catalog) == "table" then
 		for _, entry in ipairs(catalog) do
 			if typeof(entry) == "table" and entry.id == equippedId then
@@ -24,6 +25,21 @@ local function pickStatsFromCatalog(catalog, equippedId)
 		end
 	end
 	return nil
+end
+
+local function normalizeStats(stats)
+	-- Accept multiple key names and default to 1.0 (neutral) if missing or == 0
+	local function val(x)
+		if x == nil or x == 0 then return 1.0 end
+		return x
+	end
+	return {
+		lure      = val(stats and (stats.lure or stats.speed)),
+		rarity    = val(stats and (stats.rarity or stats.luck)),
+		control   = val(stats and (stats.control)),
+		weight    = val(stats and (stats.weight or stats.maxWeight)),
+		stability = val(stats and (stats.stability)),
+	}
 end
 
 local function stringify(tbl)
@@ -36,21 +52,39 @@ local function stringify(tbl)
 	return "{ " .. table.concat(parts, ", ") .. " }"
 end
 
-local function onOpenReel(...)
-	if not reelV2 or not reelV2.Value then return end
-	local getMagnets = ReplicatedStorage:FindFirstChild("GetMagnets")
-	if not getMagnets or not getMagnets:IsA("RemoteFunction") then
-		warn("[ReelV2Logger] GetMagnets RemoteFunction not found")
-		return
+local function getMagnetInfo()
+	local rf = ReplicatedStorage:FindFirstChild("GetMagnets")
+	if not rf or not rf:IsA("RemoteFunction") then
+		return nil
 	end
-	local data = getMagnets:InvokeServer()
-	local equippedId = data and data.equipped
-	local stats = data and (data.stats or pickStatsFromCatalog(data.catalog, equippedId))
-	print(string.format("[ReelV2] Equipped %s %s", tostring(equippedId), stringify(stats)))
+	local data = rf:InvokeServer()
+	if not data then return nil end
+
+	local equippedId = data.equipped
+	local rawStats = data.stats or pickStatsFromCatalog(data.catalog, equippedId)
+	local stats = normalizeStats(rawStats or {})
+
+	return equippedId, stats
 end
 
-if openReel then
-	openReel.OnClientEvent:Connect(onOpenReel)
+local function onOpenReel(...)
+	if not ReelV2Flag or not ReelV2Flag.Value then return end
+	local id, stats = getMagnetInfo()
+	print(string.format("[ReelV2/start] Equipped %s %s", tostring(id), stringify(stats)))
+end
+
+local function onReelEnded(...)
+	if not ReelV2Flag or not ReelV2Flag.Value then return end
+	local id, stats = getMagnetInfo()
+	print(string.format("[ReelV2/end] Equipped %s %s", tostring(id), stringify(stats)))
+end
+
+if OpenReel then
+	OpenReel.OnClientEvent:Connect(onOpenReel)
 else
 	warn("[ReelV2Logger] OpenReel RemoteEvent not found")
+end
+
+if ReelEnded then
+	ReelEnded.OnClientEvent:Connect(onReelEnded)
 end
