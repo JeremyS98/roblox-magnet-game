@@ -1,68 +1,52 @@
 -- ServerScriptService/MagnetEquip.server.lua
--- Backend for magnet inventory/equip (no gameplay effect yet).
--- Provides remotes to read catalog and set EquippedMagnetId in player data.
--- Safe to run with FeatureFlags.MagnetsEnabled=false (no behavior change).
+-- Exposes remotes to get catalog and equip a magnet. Persists EquippedMagnetId on player.
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStorage")
-local SSS = game:GetService("ServerScriptService")
 
-local FeatureFlags = require(SSS:WaitForChild("Modules"):WaitForChild("FeatureFlags"))
-local MagnetCatalog = require(SSS:WaitForChild("Modules"):WaitForChild("MagnetCatalog"))
+local Magnets = require(ServerScriptService:WaitForChild("Modules"):WaitForChild("Magnets"))
 
-local function ensureRE(n)
-	local r = RS:FindFirstChild(n)
-	if r and r:IsA("RemoteEvent") then return r end
-	if r then r:Destroy() end
-	r = Instance.new("RemoteEvent"); r.Name = n; r.Parent = RS
-	return r
-end
-local function ensureRF(n)
-	local r = RS:FindFirstChild(n)
-	if r and r:IsA("RemoteFunction") then return r end
-	if r then r:Destroy() end
-	r = Instance.new("RemoteFunction"); r.Name = n; r.Parent = RS
-	return r
+-- Utilities to ensure remotes
+local function ensureRF(name)
+	local obj = ReplicatedStorage:FindFirstChild(name)
+	if obj and obj:IsA("RemoteFunction") then return obj end
+	if obj then obj:Destroy() end
+	obj = Instance.new("RemoteFunction")
+	obj.Name = name
+	obj.Parent = ReplicatedStorage
+	return obj
 end
 
-local GetMagnetsRF   = ensureRF("GetMagnets")
-local EquipMagnetRF  = ensureRF("EquipMagnet")
+local GetMagnetsRF = ensureRF("GetMagnets")
+local EquipMagnetRF = ensureRF("EquipMagnet")
 
--- You may already be persisting EquippedMagnetId in MagnetGame.server.lua snapshot/load.
--- We simply read/write player attribute here for now; the main save loop will capture it.
-
-local function getEquippedId(plr)
-	return plr:GetAttribute("EquippedMagnetId")
-end
-
-local function setEquippedId(plr, id)
-	plr:SetAttribute("EquippedMagnetId", id)
-end
-
--- Remote implementations
-GetMagnetsRF.OnServerInvoke = function(plr)
-	-- Return catalog and the player's current equipped id
-	local cat = MagnetCatalog.ALL()
-	local equipped = getEquippedId(plr) or MagnetCatalog.DEFAULT_ID()
-	return { catalog = cat, equipped = equipped, enabled = FeatureFlags.MagnetsEnabled == true }
-end
-
-EquipMagnetRF.OnServerInvoke = function(plr, magnetId)
-	if type(magnetId) ~= "string" then return { ok = false, err = "bad_id" } end
-	local def = MagnetCatalog.GET(magnetId)
-	if not def then return { ok = false, err = "unknown" } end
-
-	-- For now, no ownership gating—everyone "owns" the starter set.
-	setEquippedId(plr, magnetId)
-
-	-- No gameplay effect yet; we only store. When MagnetsEnabled is true, game will start reading stats.
-	return { ok = true, equipped = magnetId, stats = def.stats or {} }
-end
-
--- Ensure every joining player has a default id set (non-destructive)
-local defaultId = MagnetCatalog.DEFAULT_ID()
+-- Initialize EquippedMagnetId on join if missing
 Players.PlayerAdded:Connect(function(plr)
-	if not plr:GetAttribute("EquippedMagnetId") then
-		plr:SetAttribute("EquippedMagnetId", defaultId)
+	if plr:GetAttribute("EquippedMagnetId") == nil then
+		-- default to starter_basic
+		plr:SetAttribute("EquippedMagnetId", "starter_basic")
 	end
 end)
+
+-- Return catalog + equipped id (+ stats convenience if available)
+GetMagnetsRF.OnServerInvoke = function(plr)
+	local equipped = plr:GetAttribute("EquippedMagnetId") or "starter_basic"
+	local entry = Magnets.ById(equipped)
+	return {
+		enabled = Magnets.enabled == true,
+		catalog = Magnets.GetCatalog(),
+		equipped = equipped,
+		stats = entry and entry.stats or nil,
+	}
+end
+
+-- Equip by id (no validation beyond existence for now; safe because it has no gameplay effect yet)
+EquipMagnetRF.OnServerInvoke = function(plr, id)
+	local entry = Magnets.ById(id)
+	if not entry then
+		return { ok = false, error = "unknown_id" }
+	end
+	plr:SetAttribute("EquippedMagnetId", id)
+	return { ok = true, equipped = id, stats = entry.stats }
+end
