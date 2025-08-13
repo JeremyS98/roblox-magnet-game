@@ -1,0 +1,26 @@
+-- ServerScriptService/Modules/Admins.lua
+local Admins = {}
+
+-- >>> Replace 1234567890 with YOUR numeric Roblox UserId
+Admins.LIST = {
+	9133502916
+}
+
+function Admins.IsAdmin(userId:number)
+	for _, id in ipairs(Admins.LIST) do
+		if id == userId then return true end
+	end
+	return false
+end
+
+function Admins.Add(id:number)
+	table.insert(Admins.LIST, id)
+end
+
+function Admins.Remove(id:number)
+	for i,v in ipairs(Admins.LIST) do
+		if v == id then table.remove(Admins.LIST, i) break end
+	end
+end
+
+return Admins
