@@ -895,9 +895,6 @@ if GetGamepassIdsRF then
 	end
 end
 		return { SELL_ANYWHERE = 0, DOUBLE_XP = 0, SUPPORTER = 0 }
-	end
-end
-
 if GetProductIdsRF then
 	GetProductIdsRF.OnServerInvoke = function(plr)
 		if GamepassService and GamepassService.PRODUCT_IDS then
