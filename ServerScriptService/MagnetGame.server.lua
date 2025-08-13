@@ -401,13 +401,13 @@ end
 -- Sell Anywhere handler (gamepass-gated)
 if SellAnywhereRE and SellAnywhereRE.OnServerEvent ~= nil then
 	SellAnywhereRE.OnServerEvent:Connect(function(plr)
-	if (GamepassService and GamepassService.HasSellAnywhere and GamepassService.HasSellAnywhere(plr.UserId)) then
-			sellAll(plr)
-		else
-			local GM = ensureRE("GameMessage")
-			GM:FireClient(plr, "Sell Anywhere requires the gamepass.")
-		end
-	end)
+	if (Admins and Admins.IsAdmin and Admins.IsAdmin(plr.UserId)) or (GamepassService and GamepassService.HasSellAnywhere and GamepassService.HasSellAnywhere(plr.UserId)) then
+		sellAll(plr)
+	else
+		local GM = ensureRE("GameMessage")
+		GM:FireClient(plr, "Sell Anywhere requires the gamepass.")
+	end
+end)
 end
 
 
@@ -878,12 +878,10 @@ print("[MagnetGame] Server ready v4.6 (HIT cue + 2s pre-reel).")
 
 if CheckSellAnywhereRF then
 	CheckSellAnywhereRF.OnServerInvoke = function(plr)
-	if Admins.IsAdmin(plr.UserId) then return true end
-	if GamepassService and GamepassService.HasSellAnywhere then
-		return GamepassService.HasSellAnywhere(plr.UserId) == true
-	end
-	return false
-end
+		if Admins and Admins.IsAdmin and Admins.IsAdmin(plr.UserId) then return true end
+		if GamepassService and GamepassService.HasSellAnywhere then
+			return GamepassService.HasSellAnywhere(plr.UserId) == true
+		end
 		return false
 	end
 end
@@ -893,6 +891,9 @@ if GetGamepassIdsRF then
 		if GamepassService and GamepassService.PASS_IDS then
 			return GamepassService.PASS_IDS()
 		end
+		return { SELL_ANYWHERE = 0, DOUBLE_XP = 0, SUPPORTER = 0 }
+	end
+end
 		return { SELL_ANYWHERE = 0, DOUBLE_XP = 0, SUPPORTER = 0 }
 	end
 end
