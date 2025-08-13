@@ -28,7 +28,7 @@ local ICON_SIZE = 64
 local GAP_PX = 18  -- horizontal gap between circular icons
 local RIGHT_MARGIN_PX = 24  -- how far the Backpack sits from the right edge
 local BOTTOM_MARGIN_PX = 26 -- distance from bottom edge
-
+local MAGNET_EXTRA_SHIFT_PX = 48  -- + = move right,  - = move left
 -- Fonts (match Backpack/Journal: GothamBold looks like their UI style)
 local LETTER_FONT = Enum.Font.GothamBold
 
@@ -69,7 +69,8 @@ local bottomScale= pxToScaleY(BOTTOM_MARGIN_PX)
 -- Magnet will sit one more gap+icon left.
 local backpackX = 1 - rightScale   -- right margin (normalized)
 local journalX  = backpackX - iconScaleX - gapScaleX
-local magnetX   = journalX  - iconScaleX - gapScaleX
+local magnetX   = journalX  - iconScaleX - gapScaleX + pxToScaleX(MAGNET_EXTRA_SHIFT_PX)
+
 
 ---------------------------------------------------------------------
 -- Build circular magnet button
@@ -140,7 +141,7 @@ if not panel then
 	panel = Instance.new("Frame")
 	panel.Name = "MagnetsPanel"
 	panel.Size = UDim2.fromScale(0.48, 0.52)
-	panel.Position = UDim2.fromScale(0.26, 0.22)
+	panel.Position = UDim2.fromScale(0.26, 0.26)
 	panel.BackgroundColor3 = Color3.fromRGB(18,18,20)
 	panel.BackgroundTransparency = 0.05
 	panel.Visible = false
