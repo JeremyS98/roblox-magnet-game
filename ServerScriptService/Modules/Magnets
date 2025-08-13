@@ -1,0 +1,39 @@
+-- ServerScriptService/Modules/Magnets.lua
+-- Shadow magnet equip manager (no gameplay effect yet). Stores the equipped id as a Player Attribute
+-- and provides helper functions. Later, gameplay will read these stats when the feature flag is on.
+
+local Players = game:GetService("Players")
+local SSS = game:GetService("ServerScriptService")
+
+local Catalog = require(SSS:WaitForChild("Modules"):WaitForChild("MagnetCatalog"))
+
+local M = {}
+
+local ATTR = "EquippedMagnetId"
+
+function M.GetEquippedId(plr)
+	if not plr then return Catalog.DefaultId() end
+	return plr:GetAttribute(ATTR) or Catalog.DefaultId()
+end
+
+function M.SetEquippedId(plr, id)
+	if not (plr and Catalog.IsValid(id)) then return false end
+	plr:SetAttribute(ATTR, id)
+	return true
+end
+
+-- Convenience for server console testing:
+-- local magnets = require(game.ServerScriptService.Modules.Magnets)
+-- magnets.Equip(game.Players.YourName, "lucky")
+function M.Equip(plr, id)
+	return M.SetEquippedId(plr, id)
+end
+
+-- Ensure new players have a default
+Players.PlayerAdded:Connect(function(plr)
+	if not plr:GetAttribute(ATTR) then
+		plr:SetAttribute(ATTR, Catalog.DefaultId())
+	end
+end)
+
+return M
