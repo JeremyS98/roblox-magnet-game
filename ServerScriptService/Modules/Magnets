@@ -1,43 +1,41 @@
 -- ServerScriptService/Modules/Magnets.lua
 -- Shadow magnet system catalog (no gameplay effects yet)
--- Safe API: Magnets.enabled, Magnets.catalog, Magnets.GetCatalog(), Magnets.ById(id)
 
-local FeatureFlags = require(game.ServerScriptService:WaitForChild("Modules"):WaitForChild("FeatureFlags"))
+local ServerScriptService = game:GetService("ServerScriptService")
+local FeatureFlags = require(ServerScriptService:WaitForChild("Modules"):WaitForChild("FeatureFlags"))
 
 local Magnets = {}
 
--- Keep feature flag wiring declarative
+-- Feature flag mirror
 Magnets.enabled = (FeatureFlags and FeatureFlags.MagnetsEnabled) == true
 
--- Neutral starter catalog
--- Stats are neutral (1.0). Names/ids are placeholders you can rename later.
+-- Neutral starter catalog (dictionary keyed by id)
 Magnets.catalog = {
 	starter_basic = {
 		id = "starter_basic",
 		name = "Basic Magnet",
 		desc = "A plain, reliable magnet with no special properties.",
-		stats = { lure = 1.0, rarity = 1.0, control = 1.0, weight = 1.0, stability = 1.0 },
+		stats = { lure = 1.0, rarity = 1.0, control = 1.0, weight = 1.0, stability = 1.0 }
 	},
 	starter_lucky = {
 		id = "starter_lucky",
 		name = "Lucky Magnet",
 		desc = "Said to attract better finds—pure superstition (for now).",
-		stats = { lure = 1.0, rarity = 1.0, control = 1.0, weight = 1.0, stability = 1.0 },
+		stats = { lure = 1.0, rarity = 1.0, control = 1.0, weight = 1.0, stability = 1.0 }
 	},
 	starter_fast = {
 		id = "starter_fast",
 		name = "Quickdraw Magnet",
 		desc = "Slick shape that cuts through the water easily.",
-		stats = { lure = 1.0, rarity = 1.0, control = 1.0, weight = 1.0, stability = 1.0 },
-	},
+		stats = { lure = 1.0, rarity = 1.0, control = 1.0, weight = 1.0, stability = 1.0 }
+	}
 }
 
 function Magnets.GetCatalog()
-	-- Return a shallow copy (so callers don't mutate our table by accident)
 	local out = {}
 	for k, v in pairs(Magnets.catalog) do
 		out[k] = v
-	}
+	end
 	return out
 end
 
