@@ -10,6 +10,16 @@ local Workspace = game:GetService("Workspace")
 local DataStoreService = game:GetService("DataStoreService")
 local CollectionService = game:GetService("CollectionService")
 local Terrain = Workspace.Terrain
+local SSS = game:GetService("ServerScriptService")
+
+-- ===== Modules =====
+local Modules = SSS:WaitForChild("Modules")
+local Admins = require(Modules:WaitForChild("Admins"))
+local GamepassService = require(Modules:WaitForChild("GamepassService"))
+local Boosts = nil
+pcall(function() Boosts = require(Modules:WaitForChild("Boosts")) end)
+local XPAdjust = nil
+pcall(function() XPAdjust = require(Modules:WaitForChild("XPAdjust")) end)
 
 -- ===== Remotes =====
 local function ensureRE(n)
@@ -40,10 +50,10 @@ local SellAllResult         = ensureRE("SellAllResult")
 local RequestBackpack       = ensureRE("RequestBackpack")
 local BackpackData          = ensureRE("BackpackData")
 local RemoveItemRE          = ensureRE("RemoveBackpackItem")
-local SellAnywhereRE      = ensureRE("SellAnywhere")
-local CheckSellAnywhereRF = ensureRF("CheckSellAnywhere")
-local GetGamepassIdsRF    = ensureRF("GetGamepassIds")
-local GetProductIdsRF    = ensureRF("GetProductIds")
+local SellAnywhereRE        = ensureRE("SellAnywhere")
+local CheckSellAnywhereRF   = ensureRF("CheckSellAnywhere")
+local GetGamepassIdsRF      = ensureRF("GetGamepassIds")
+local GetProductIdsRF       = ensureRF("GetProductIds")
 
 local XPUpdateRE            = ensureRE("XPUpdate")
 local RequestJournal        = ensureRE("RequestJournal")
@@ -180,16 +190,16 @@ local Loot = {
 		{name="Royal Seal Medallion", base=201, minW=1.01, maxW=2.80, rollWeight=2},
 		{name="Bronze Idol Fragment", base=191, minW=0.77, maxW=2.25, rollWeight=3},
 	},
-		
-Legendary = {
-	{name="Golden Anchor", base=800, minW=2.0, maxW=6.0, rollWeight=1},
-	{name="Sunken Compass", base=1200, minW=0.40, maxW=1.60, rollWeight=1},
-	{name="Cursed Crown", base=700, minW=0.6, maxW=1.4, rollWeight=1},
-	{name="Royal Scepter", base=900, minW=0.8, maxW=1.8, rollWeight=1},
-},
-Mythic = {
-	{name="Meteoric Iron Idol", base=5000, minW=3.0, maxW=8.0, rollWeight=1},
-},
+
+	Legendary = {
+		{name="Golden Anchor", base=800, minW=2.0, maxW=6.0, rollWeight=1},
+		{name="Sunken Compass", base=1200, minW=0.40, maxW=1.60, rollWeight=1},
+		{name="Cursed Crown", base=700, minW=0.6, maxW=1.4, rollWeight=1},
+		{name="Royal Scepter", base=900, minW=0.8, maxW=1.8, rollWeight=1},
+	},
+	Mythic = {
+		{name="Meteoric Iron Idol", base=5000, minW=3.0, maxW=8.0, rollWeight=1},
+	},
 }
 -- ===== Auto-descriptions ============================================
 local function simpleDescription(name: string): string
@@ -364,7 +374,7 @@ local function pushXP(plr, delta)
 	XPUpdateRE:FireClient(plr,{delta=math.floor(delta or 0), level=curLv, xp=curXP, need=xpToNext(curLv)})
 end
 local function addXP(plr, amount)
-amount = (XPAdjust and XPAdjust.Adjust and XPAdjust.Adjust(plr, amount)) or amount
+	amount = (XPAdjust and XPAdjust.Adjust and XPAdjust.Adjust(plr, amount)) or amount
 	amount = math.max(0, math.floor(amount or 0))
 	if amount==0 then pushXP(plr,0) return end
 	local curXP=plr:GetAttribute("XP") or 0
@@ -398,16 +408,16 @@ local function sellAll(plr)
 	addXP(plr, sellXPFromValue(pre))
 	sendBackpack(plr)
 end
--- Sell Anywhere handler (gamepass-gated)
+-- Sell Anywhere handler (gamepass-gated, admin overrides)
 if SellAnywhereRE and SellAnywhereRE.OnServerEvent ~= nil then
 	SellAnywhereRE.OnServerEvent:Connect(function(plr)
-	if (Admins and Admins.IsAdmin and Admins.IsAdmin(plr.UserId)) or (GamepassService and GamepassService.HasSellAnywhere and GamepassService.HasSellAnywhere(plr.UserId)) then
-		sellAll(plr)
-	else
-		local GM = ensureRE("GameMessage")
-		GM:FireClient(plr, "Sell Anywhere requires the gamepass.")
-	end
-end)
+		if (Admins and Admins.IsAdmin and Admins.IsAdmin(plr.UserId)) or (GamepassService and GamepassService.HasSellAnywhere and GamepassService.HasSellAnywhere(plr.UserId)) then
+			sellAll(plr)
+		else
+			local GM = ensureRE("GameMessage")
+			GM:FireClient(plr, "Sell Anywhere requires the gamepass.")
+		end
+	end)
 end
 
 
@@ -876,6 +886,7 @@ end)
 
 print("[MagnetGame] Server ready v4.6 (HIT cue + 2s pre-reel).")
 
+-- ===== Pass/product RFs & SellAnywhere check =====
 if CheckSellAnywhereRF then
 	CheckSellAnywhereRF.OnServerInvoke = function(plr)
 		if Admins and Admins.IsAdmin and Admins.IsAdmin(plr.UserId) then return true end
@@ -894,7 +905,7 @@ if GetGamepassIdsRF then
 		return { SELL_ANYWHERE = 0, DOUBLE_XP = 0, SUPPORTER = 0 }
 	end
 end
-		return { SELL_ANYWHERE = 0, DOUBLE_XP = 0, SUPPORTER = 0 }
+
 if GetProductIdsRF then
 	GetProductIdsRF.OnServerInvoke = function(plr)
 		if GamepassService and GamepassService.PRODUCT_IDS then
