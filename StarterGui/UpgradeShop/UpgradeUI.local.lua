@@ -95,63 +95,6 @@ local rowReel, btnReel, lblReel   = makeRow(0.52, "Reel Speed", "shorter wait ti
 local rowStr , btnStr , lblStr    = makeRow(0.72, "Magnet Strength", "+% sell value")
 
 
--- Premium section
-local premiumTitle = Instance.new("TextLabel")
-premiumTitle.Size = UDim2.fromScale(1, 0.1)
-premiumTitle.Position = UDim2.fromScale(0, 0.88)
-premiumTitle.BackgroundTransparency = 1
-premiumTitle.TextScaled = true
-premiumTitle.TextColor3 = Color3.fromRGB(255, 255, 200)
-premiumTitle.Text = "✨ Premium"
-premiumTitle.Parent = frame
-
-local function makeBuyBtn(name, xPos)
-	local b = Instance.new("TextButton")
-	b.Name = name .. "Btn"
-	b.Size = UDim2.fromScale(0.23, 0.11)
-	b.Position = UDim2.fromScale(xPos, 0.88)
-	b.BackgroundColor3 = Color3.fromRGB(50,90,140)
-	b.Text = name
-	b.TextScaled = true
-	b.TextColor3 = Color3.new(1,1,1)
-	b.Parent = frame
-	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,8); c.Parent = b
-	local s = Instance.new("UIStroke"); s.Thickness = 1.5; s.Parent = b
-	return b
-end
-
-local btnSellAnywhere = makeBuyBtn("Sell Anywhere", 0.02)
-local btnDoubleXP    = makeBuyBtn("Double XP",     0.27)
-local btnSupporter   = makeBuyBtn("Supporter",     0.52)
-local btnLuckBoost   = makeBuyBtn("Luck x2 (15m)", 0.77)
-
--- Hook to Marketplace
-local MarketplaceService = game:GetService("MarketplaceService")
-local RS = game:GetService("ReplicatedStorage")
-local GetGamepassIdsRF = RS:WaitForChild("GetGamepassIds", 2)
-local GetProductIdsRF  = RS:WaitForChild("GetProductIds", 2)
-
-local PASS = {}
-local PROD = {}
-pcall(function() if GetGamepassIdsRF then PASS = GetGamepassIdsRF:InvokeServer() end end)
-pcall(function() if GetProductIdsRF  then PROD = GetProductIdsRF:InvokeServer()  end end)
-
-local function promptPass(id)
-	if id and id > 0 then
-		MarketplaceService:PromptGamePassPurchase(player, id)
-	end
-end
-
-local function promptProduct(id)
-	if id and id > 0 then
-		MarketplaceService:PromptProductPurchase(player, id)
-	end
-end
-
-btnSellAnywhere.MouseButton1Click:Connect(function() promptPass(PASS.SELL_ANYWHERE) end)
-btnDoubleXP.MouseButton1Click:Connect(function() promptPass(PASS.DOUBLE_XP) end)
-btnSupporter.MouseButton1Click:Connect(function() promptPass(PASS.SUPPORTER) end)
-btnLuckBoost.MouseButton1Click:Connect(function() promptProduct(PROD.SERVER_LUCK_2X_15MIN) end)
 local note = Instance.new("TextLabel")
 note.Size = UDim2.fromScale(1, 0.12)
 note.Position = UDim2.fromScale(0, 0.88)
