@@ -1,6 +1,6 @@
 -- MagnetsUI.local.lua
 -- ScreenGui-based Magnets UI (place this as a LocalScript inside StarterGui/MagnetsUI)
--- Matches Backpack/Journal style: circular black button, blue badge with "M".
+-- Matches Backpack/Journal style: circular black button + blue "M" badge.
 -- Keybind: M. Positioned to the LEFT of Journal/Backpack cluster.
 
 local RS = game:GetService("ReplicatedStorage")
@@ -17,7 +17,7 @@ if not UIBus then
 	UIBus.Parent = RS
 end
 
--- Feature flags (optional, safe if missing)
+-- Optional feature flags (safe if missing)
 local FF = RS:FindFirstChild("FeatureFlags")
 
 -- Remotes for magnets
@@ -26,7 +26,7 @@ local EquipMagnetRF = RS:FindFirstChild("EquipMagnet")
 
 -- Root ScreenGui
 local gui = script.Parent
-if gui:IsA("ScreenGui") then
+if gui and gui:IsA("ScreenGui") then
 	gui.ResetOnSpawn = false
 	gui.IgnoreGuiInset = true
 end
@@ -42,8 +42,8 @@ local function makeFab(parent: Instance)
 	fab = Instance.new("Frame")
 	fab.Name = "MagnetsFAB"
 	fab.AnchorPoint = Vector2.new(1,1)
-	-- place to the LEFT of the existing bottom-right buttons (journal/backpack)
-	-- Backpack & Journal sit around X=0.94..0.98 usually; use 0.88 to avoid overlap.
+	-- Place to the LEFT of the existing bottom-right buttons (journal/backpack)
+	-- Backpack & Journal sit around X=0.94..0.98; use 0.86 to avoid overlap.
 	fab.Position = UDim2.fromScale(0.86, 0.95)
 	fab.Size = UDim2.fromOffset(64, 64)
 	fab.BackgroundTransparency = 1
@@ -140,7 +140,7 @@ local function makePanel(parent: Instance)
 	title.BackgroundTransparency = 1
 	title.Size = UDim2.fromScale(0.7, 1)
 	title.Position = UDim2.fromScale(0.04, 0)
-	title.Text = "🧲  Magnets"
+	title.Text = "🧲  Magnets" -- no (disable) text here
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.TextScaled = true
 	title.Font = Enum.Font.GothamBold
@@ -210,7 +210,7 @@ end
 ---------------------------------------------------------------------
 -- Populate catalog (read-only for now)
 ---------------------------------------------------------------------
-local function addCard(grid: Instance, def: table, equippedId: string)
+local function addCard(grid: Instance, def: table, equippedId: string, repopulateCb: ()->())
 	local card = Instance.new("Frame")
 	card.BackgroundColor3 = Color3.fromRGB(28,28,32)
 	card.ZIndex = 61
@@ -266,16 +266,7 @@ local function addCard(grid: Instance, def: table, equippedId: string)
 			return EquipMagnetRF:InvokeServer(def.id)
 		end)
 		if ok and res and res.ok then
-			-- refresh UI by firing open() again
-			local root = script.Parent
-			if root and root:FindFirstChild("MagnetsPanel") then
-				root.MagnetsPanel.Visible = false
-			end
-			task.defer(function()
-				-- re-open will repopulate from server
-				local open = require(script:FindFirstChild("open_helper"))
-				if open then open() end
-			end)
+			repopulateCb()
 		end
 	end)
 
@@ -312,7 +303,7 @@ local function populate()
 	else
 		empty.Visible = false
 		for _,def in ipairs(catalog) do
-			addCard(grid, def, equippedId)
+			addCard(grid, def, equippedId, populate)
 		end
 	end
 end
@@ -334,19 +325,6 @@ local function close()
 		panel.Visible = false
 		player:SetAttribute("UILocked", false)
 	end
-end
-
--- Expose "open" to the equip handler above via a tiny ModuleScript companion
-do
-	local helper = script:FindFirstChild("open_helper")
-	if helper then helper:Destroy() end
-	local m = Instance.new("ModuleScript")
-	m.Name = "open_helper"
-	m.Source = "return function() "..([[
-		local gui = script.Parent.Parent
-		local open = require(script.Parent)
-	]]):gsub("\n"," ").." end"
-	m.Parent = script
 end
 
 -- Create the fab and wire controls
