@@ -43,6 +43,7 @@ local RemoveItemRE          = ensureRE("RemoveBackpackItem")
 local SellAnywhereRE      = ensureRE("SellAnywhere")
 local CheckSellAnywhereRF = ensureRF("CheckSellAnywhere")
 local GetGamepassIdsRF    = ensureRF("GetGamepassIds")
+local GetProductIdsRF    = ensureRF("GetProductIds")
 
 local XPUpdateRE            = ensureRE("XPUpdate")
 local RequestJournal        = ensureRE("RequestJournal")
@@ -890,5 +891,14 @@ if GetGamepassIdsRF then
 			return GamepassService.PASS_IDS()
 		end
 		return { SELL_ANYWHERE = 0, DOUBLE_XP = 0, SUPPORTER = 0 }
+	end
+end
+
+if GetProductIdsRF then
+	GetProductIdsRF.OnServerInvoke = function(plr)
+		if GamepassService and GamepassService.PRODUCT_IDS then
+			return GamepassService.PRODUCT_IDS()
+		end
+		return { SERVER_LUCK_2X_15MIN = 0 }
 	end
 end
