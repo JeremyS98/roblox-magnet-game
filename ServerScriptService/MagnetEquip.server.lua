@@ -1,5 +1,5 @@
 -- ServerScriptService/MagnetEquip.server.lua
--- Exposes remotes to get catalog and equip a magnet. Persists EquippedMagnetId on player.
+-- Exposes remotes to get catalog and equip a magnet. Persists EquippedMagnetId on the player.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -24,7 +24,6 @@ local EquipMagnetRF = ensureRF("EquipMagnet")
 -- Initialize EquippedMagnetId on join if missing
 Players.PlayerAdded:Connect(function(plr)
 	if plr:GetAttribute("EquippedMagnetId") == nil then
-		-- default to starter_basic
 		plr:SetAttribute("EquippedMagnetId", "starter_basic")
 	end
 end)
@@ -41,7 +40,7 @@ GetMagnetsRF.OnServerInvoke = function(plr)
 	}
 end
 
--- Equip by id (no validation beyond existence for now; safe because it has no gameplay effect yet)
+-- Equip by id (no validation beyond existence for now)
 EquipMagnetRF.OnServerInvoke = function(plr, id)
 	local entry = Magnets.ById(id)
 	if not entry then
