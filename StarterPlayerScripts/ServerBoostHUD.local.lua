@@ -1,6 +1,6 @@
 -- StarterPlayer/StarterPlayerScripts/ServerBoostHUD.local.lua
--- Shows a small top-center chip: "Luck xN – mm:ss" while server luck is active.
--- Robust against late RemoteEvent creation and missing flags.
+-- Shows a small top-area chip: "Luck xN – mm:ss" while server luck is active.
+-- Positioned at 1/4 of the screen width (from left to right).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -46,7 +46,8 @@ gui.Parent = player:WaitForChild("PlayerGui")
 local frame = Instance.new("Frame")
 frame.Name = "Chip"
 frame.AnchorPoint = Vector2.new(0.5, 0)
-frame.Position = UDim2.new(0.5, 0, 0.02, 0)
+-- Moved from top-center (0.5, 0.02) to quarter screen (0.25, 0.02)
+frame.Position = UDim2.new(0.25, 0, 0.02, 0)
 frame.Size = UDim2.new(0, 220, 0, 28)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 frame.BackgroundTransparency = 0.2
