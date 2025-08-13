@@ -1,0 +1,42 @@
+-- ServerScriptService/Modules/MagnetCatalog.lua
+-- Shadow magnet catalog (no gameplay effect yet while MagnetsEnabled=false)
+-- Each magnet has neutral stats; used for inventory/equip only for now.
+
+local Catalog = {
+    -- id must be stable for saves
+    { id = "starter_classic", name = "Classic Magnet", tier = "Common", stats = {
+        luck = 0, control = 0, speed = 0, stability = 0, maxWeight = 0,
+    }},
+    { id = "starter_lucky", name = "Lucky Magnet", tier = "Common", stats = {
+        luck = 0, control = 0, speed = 0, stability = 0, maxWeight = 0,
+    }},
+    { id = "starter_fast", name = "Fast Magnet", tier = "Common", stats = {
+        luck = 0, control = 0, speed = 0, stability = 0, maxWeight = 0,
+    }},
+    { id = "starter_control", name = "Control Magnet", tier = "Common", stats = {
+        luck = 0, control = 0, speed = 0, stability = 0, maxWeight = 0,
+    }},
+    { id = "starter_heavy", name = "Heavy Magnet", tier = "Common", stats = {
+        luck = 0, control = 0, speed = 0, stability = 0, maxWeight = 0,
+    }},
+}
+
+local byId = {}
+for _,m in ipairs(Catalog) do byId[m.id] = m end
+
+local M = {}
+
+function M.ALL()
+    return Catalog
+end
+
+function M.GET(id)
+    return byId[id]
+end
+
+-- Recommended default id (safe even if stats later change)
+function M.DEFAULT_ID()
+    return "starter_classic"
+end
+
+return M
