@@ -1,4 +1,4 @@
--- ServerScriptService/SupporterBridge.server.lua (full)
+-- ServerScriptService/SupporterBridge.server (Script)
 local RS  = game:GetService("ReplicatedStorage")
 local SSS = game:GetService("ServerScriptService")
 
