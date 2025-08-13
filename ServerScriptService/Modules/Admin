@@ -1,23 +1,20 @@
--- ServerScriptService/Modules/Admins.lua
+-- ServerScriptService/Modules/Admins.lua (full)
 local Admins = {}
 
--- >>> Replace 1234567890 with YOUR numeric Roblox UserId
+-- Replace with your numeric Roblox UserId(s)
 Admins.LIST = {
 	9133502916
 }
 
-function Admins.IsAdmin(userId:number)
+function Admins.IsAdmin(userId)
 	for _, id in ipairs(Admins.LIST) do
 		if id == userId then return true end
 	end
 	return false
 end
 
-function Admins.Add(id:number)
-	table.insert(Admins.LIST, id)
-end
-
-function Admins.Remove(id:number)
+function Admins.Add(id) table.insert(Admins.LIST, id) end
+function Admins.Remove(id)
 	for i,v in ipairs(Admins.LIST) do
 		if v == id then table.remove(Admins.LIST, i) break end
 	end
