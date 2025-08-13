@@ -1,24 +1,35 @@
--- BootBoosts.server.lua (safe wait-for-module)
-local SSS = game:GetService("ServerScriptService")
-local Modules = SSS:WaitForChild("Modules")
+-- BoostsBridge.server.lua
+-- Exposes server-luck boost state to clients via a RemoteFunction.
+-- Depends on Modules/Boosts (already creates BoostChanged RemoteEvent).
 
--- Debug listing if something goes wrong
-local function listChildren()
-	for _, c in ipairs(Modules:GetChildren()) do
-		print("[Modules] child:", c.Name, c.ClassName)
-	end
+local RS = game:GetService("ReplicatedStorage")
+local SSS = game:GetService("ServerScriptService")
+
+-- Ensure RemoteFunction
+local GetBoostState = RS:FindFirstChild("GetBoostState")
+if not GetBoostState then
+	GetBoostState = Instance.new("RemoteFunction")
+	GetBoostState.Name = "GetBoostState"
+	GetBoostState.Parent = RS
 end
 
-local ok, BoostsOrErr = pcall(function()
-	local BoostsModule = Modules:WaitForChild("Boosts", 10) -- waits up to 10s
-	return require(BoostsModule)
+-- Try to require Boosts safely
+local Boosts
+local ok, mod = pcall(function()
+	local Modules = SSS:FindFirstChild("Modules")
+	if Modules then
+		local inst = Modules:FindFirstChild("Boosts") or Modules:FindFirstChild("Boosts.lua")
+		if inst then return require(inst) end
+	end
+	return nil
 end)
+if ok then Boosts = mod end
 
-if ok and BoostsOrErr then
-	local Boosts = BoostsOrErr
-	print(("[Boosts] ready. Server luck x%s (remaining %ss)")
-		:format(tostring(Boosts.GetLuckMultiplierForPlayer(nil)), tostring(Boosts.GetServerLuckRemaining())))
-else
-	warn("[Boosts] failed to load:", BoostsOrErr)
-	listChildren()
+-- Implementation
+GetBoostState.OnServerInvoke = function(plr)
+	if Boosts then
+		local s = Boosts.GetServerLuck()
+		return { mult = s.mult or 1.0, remaining = Boosts.GetServerLuckRemaining() or 0, buyer = s.buyer or 0 }
+	end
+	return { mult = 1.0, remaining = 0, buyer = 0 }
 end
